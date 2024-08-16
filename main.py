@@ -3,6 +3,7 @@
 from math import floor
 import numpy as np
 import pygame
+import pygame.freetype
 
 # Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
 # https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -10,11 +11,19 @@ import pygame
 width = 320
 height = 320
 
+FEED_RATE = 0.018
+KILL_RATE = 0.051
+TIME_STEP = 1
+
+
 pygame.init()
+pygame.freetype.init()
+HUD_FONT = pygame.freetype.Font("DejaVuSansMono.ttf", 12)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Reaction-Diffusion")
 clock = pygame.time.Clock()
 running = True
+step = 0
 dt = 0
 fps_array = []
 
@@ -43,14 +52,10 @@ def constrain(value, min_limit, max_limit):
   return np.minimum(max_limit, np.maximum(min_limit, value))
 
 def update(grid):
-  f = 0.018 # Feed rate
-  k = 0.051 # Kill rate
-  dt = 1 # Time step
-
   alpha = grid[:, :, 0]
   beta = grid[:, :, 1]
-  newalpha = constrain(alpha + (1.0 * laplace2d(alpha) - alpha * beta * beta + f * (1 - alpha)) * dt, 0, 1)
-  newbeta = constrain(beta + (0.5 * laplace2d(beta) + alpha * beta * beta - (k + f) * beta) * dt, 0, 1)
+  newalpha = constrain(alpha + (1.0 * laplace2d(alpha) - alpha * beta * beta + FEED_RATE * (1 - alpha)) * TIME_STEP, 0, 1)
+  newbeta = constrain(beta + (0.5 * laplace2d(beta) + alpha * beta * beta - (KILL_RATE + FEED_RATE) * beta) * TIME_STEP, 0, 1)
   retval = np.dstack([newalpha, newbeta])
   return retval
 
@@ -76,11 +81,21 @@ while running:
   canvas = get_color(main_grid)
   display_surf = pygame.surfarray.make_surface(canvas)
   screen.blit(display_surf, (0, 0))
+
+  hud_pos = [10, 10]
+  HUD_FONT.render_to(screen, hud_pos, f"Feed: {FEED_RATE}", (255, 255, 255))
+  hud_pos[1] += 18
+  HUD_FONT.render_to(screen, hud_pos, f"Kill: {KILL_RATE}", (255, 255, 255))
+  hud_pos[1] += 18
+  HUD_FONT.render_to(screen, hud_pos, f"Step: {step}", (255, 255, 255))
+
   pygame.display.flip()
 
   dt = clock.tick(60) / 1000 # Set 60 FPS limit
   fps_array.append(1 / dt)
   fps_array = fps_array[:20]
   print(floor(np.average(fps_array)))
+
+  step += 1
 
 pygame.quit()
