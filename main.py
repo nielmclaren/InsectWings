@@ -94,8 +94,12 @@ while running:
   dt = clock.tick(60) / 1000 # Set 60 FPS limit
   fps_array.append(1 / dt)
   fps_array = fps_array[:20]
-  print(floor(np.average(fps_array)))
+  #print(floor(np.average(fps_array)))
 
+  if step == 800:
+    f = f"{FEED_RATE}"[2:]
+    k = f"{KILL_RATE}"[2:]
+    pygame.image.save(screen, f"output_f{f}_k{k}.png")
   step += 1
 
 pygame.quit()
