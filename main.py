@@ -8,15 +8,15 @@ import pygame.freetype
 # Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
 # https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
-width = 320
-height = 320
+grid_width = 320
+grid_height = 32
 
 TIME_STEP = 1
 
 pygame.init()
 pygame.freetype.init()
 HUD_FONT = pygame.freetype.Font("DejaVuSansMono.ttf", 12)
-screen = pygame.display.set_mode((width, height))
+screen = pygame.display.set_mode((320, 160))
 pygame.display.set_caption("Reaction-Diffusion")
 clock = pygame.time.Clock()
 running = True
@@ -24,18 +24,13 @@ step = 0
 dt = 0
 fps_array = []
 
-seed_size = 20
+seed_size = 16
 
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
-  grid = np.zeros((width, height, 2), dtype=np.float32)
-  grid[0:width, 0:height] = [1, 0]
-
-  w1 = floor(width / 2 - seed_size / 2)
-  w2 = floor(width / 2 + seed_size / 2)
-  h1 = floor(height / 2 - seed_size / 2)
-  h2 = floor(height / 2 + seed_size / 2)
-  grid[w1:w2, h1:h2] = [0, 1]
+  grid = np.zeros((grid_width, grid_height, 2), dtype=np.float32)
+  grid[0:grid_width, 0:grid_height] = [1, 0]
+  grid[0:seed_size, 0:grid_height] = [0, 1]
   return grid
 
 def laplace2d(grid):
@@ -59,7 +54,7 @@ def update(grid):
   return retval
 
 def get_color(grid):
-  c_arr = np.zeros((width, height, 3), dtype=np.uint8)
+  c_arr = np.zeros((grid_width, grid_height, 3), dtype=np.uint8)
   c = np.floor((grid[:, :, 0] - grid[:, :, 1]) * 255)
   c_arr[:, :, 0] = constrain(255 - c, 0, 255)
   c_arr[:, :, 1] = constrain(55 - c, 0, 255)
@@ -92,7 +87,9 @@ while running:
 
   canvas = get_color(main_grid)
   display_surf = pygame.surfarray.make_surface(canvas)
-  screen.blit(display_surf, (0, 0))
+
+  screen.fill("black")
+  screen.blit(display_surf, (0, 128))
 
   hud_pos = [10, 10]
   HUD_FONT.render_to(screen, hud_pos, f"Feed: {feed_rate}", (255, 255, 255))
