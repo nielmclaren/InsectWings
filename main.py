@@ -24,13 +24,17 @@ step = 0
 dt = 0
 fps_array = []
 
+diffuse_a = 1.0
+diffuse_b = 0.5
 seed_size = 16
 
-def get_cases(feed_rate_range, kill_rate_range, num_cases_per):
-  feed_rate_step = (feed_rate_range[1] - feed_rate_range[0]) / num_cases_per
-  kill_rate_step = (kill_rate_range[1] - kill_rate_range[0]) / num_cases_per
-  return [(round(feed_rate_range[0] + (x % num_cases_per) * feed_rate_step, 3),
-           round(kill_rate_range[0] + floor(x / num_cases_per) * kill_rate_step, 3)) for x in range(0, num_cases_per * num_cases_per)]
+def get_cases(feed_rate, feed_rate_window_size, kill_rate, kill_rate_window_size, num_cases_per):
+  feed_rate_low = feed_rate - feed_rate_window_size/2
+  kill_rate_low = kill_rate - kill_rate_window_size/2
+  feed_rate_step = feed_rate_window_size / num_cases_per
+  kill_rate_step = kill_rate_window_size / num_cases_per
+  return [(round(feed_rate_low + (x % num_cases_per) * feed_rate_step, 3),
+           round(kill_rate_low + floor(x / num_cases_per) * kill_rate_step, 3)) for x in range(0, num_cases_per * num_cases_per)]
 
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
@@ -54,8 +58,8 @@ def constrain(value, min_limit, max_limit):
 def update(grid):
   alpha = grid[:, :, 0]
   beta = grid[:, :, 1]
-  newalpha = constrain(alpha + (1.0 * laplace2d(alpha) - alpha * beta * beta + feed_rate * (1 - alpha)) * TIME_STEP, 0, 1)
-  newbeta = constrain(beta + (0.5 * laplace2d(beta) + alpha * beta * beta - (kill_rate + feed_rate) * beta) * TIME_STEP, 0, 1)
+  newalpha = constrain(alpha + (diffuse_a * laplace2d(alpha) - alpha * beta * beta + feed_rate * (1 - alpha)) * TIME_STEP, 0, 1)
+  newbeta = constrain(beta + (diffuse_b * laplace2d(beta) + alpha * beta * beta - (kill_rate + feed_rate) * beta) * TIME_STEP, 0, 1)
   retval = np.dstack([newalpha, newbeta])
   return retval
 
@@ -68,7 +72,7 @@ def get_color(grid):
   return c_arr
 
 
-cases = get_cases((0.013, 0.023), (0.046, 0.056), 6)
+cases = get_cases(0.025, 0.003, 0.050, 0.003, 6)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
   (feed_rate, kill_rate) = cases[case_index]
@@ -98,6 +102,10 @@ while running:
   screen.blit(display_surf, (0, 128))
 
   hud_pos = [10, 10]
+  HUD_FONT.render_to(screen, hud_pos, f"Diffuse A: {diffuse_a}", (255, 255, 255))
+  hud_pos[1] += 18
+  HUD_FONT.render_to(screen, hud_pos, f"Diffuse B: {diffuse_b}", (255, 255, 255))
+  hud_pos[1] += 18
   HUD_FONT.render_to(screen, hud_pos, f"Feed: {feed_rate}", (255, 255, 255))
   hud_pos[1] += 18
   HUD_FONT.render_to(screen, hud_pos, f"Kill: {kill_rate}", (255, 255, 255))
@@ -111,7 +119,7 @@ while running:
   fps_array = fps_array[:20]
   #print(floor(np.average(fps_array)))
 
-  if step >= 800:
+  if step >= 1600:
     f = f"{feed_rate}"[2:5]
     k = f"{kill_rate}"[2:5]
     filename = f"output_s{step}_f{f}_k{k}.png"
