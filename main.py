@@ -87,8 +87,9 @@ while running:
       if event.key == pygame.K_ESCAPE:
         running = False
 
-  for i in range(2):
+  for i in range(8):
     main_grid = update(main_grid)
+    step += 1
 
   canvas = get_color(main_grid)
   display_surf = pygame.surfarray.make_surface(canvas)
@@ -110,11 +111,10 @@ while running:
   fps_array = fps_array[:20]
   #print(floor(np.average(fps_array)))
 
-  step += 1
-  if step == 1200:
+  if step >= 800:
     f = f"{feed_rate}"[2:5]
     k = f"{kill_rate}"[2:5]
-    filename = f"output_f{f}_k{k}_s{step}.png"
+    filename = f"output_s{step}_f{f}_k{k}.png"
     pygame.image.save(screen, f"output/{filename}")
     print(f"Saved {filename}")
 
