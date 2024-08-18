@@ -11,10 +11,7 @@ import pygame.freetype
 width = 320
 height = 320
 
-FEED_RATE = 0.018
-KILL_RATE = 0.051
 TIME_STEP = 1
-
 
 pygame.init()
 pygame.freetype.init()
@@ -29,15 +26,17 @@ fps_array = []
 
 seed_size = 20
 
-# Each element is an array of two values representing the concentration of two chemicals.
-main_grid = np.zeros((width, height, 2), dtype=np.float32)
-main_grid[0:width, 0:height] = [1, 0]
+def init_grid():
+  # Each element is an array of two values representing the concentration of two chemicals.
+  grid = np.zeros((width, height, 2), dtype=np.float32)
+  grid[0:width, 0:height] = [1, 0]
 
-w1 = floor(width / 2 - seed_size / 2)
-w2 = floor(width / 2 + seed_size / 2)
-h1 = floor(height / 2 - seed_size / 2)
-h2 = floor(height / 2 + seed_size / 2)
-main_grid[w1:w2, h1:h2] = [0, 1]
+  w1 = floor(width / 2 - seed_size / 2)
+  w2 = floor(width / 2 + seed_size / 2)
+  h1 = floor(height / 2 - seed_size / 2)
+  h2 = floor(height / 2 + seed_size / 2)
+  grid[w1:w2, h1:h2] = [0, 1]
+  return grid
 
 def laplace2d(grid):
   laplace = np.array([[0.05, 0.2, 0.05], [0.2, -1, 0.2], [0.05, 0.2, 0.05]])
@@ -54,8 +53,8 @@ def constrain(value, min_limit, max_limit):
 def update(grid):
   alpha = grid[:, :, 0]
   beta = grid[:, :, 1]
-  newalpha = constrain(alpha + (1.0 * laplace2d(alpha) - alpha * beta * beta + FEED_RATE * (1 - alpha)) * TIME_STEP, 0, 1)
-  newbeta = constrain(beta + (0.5 * laplace2d(beta) + alpha * beta * beta - (KILL_RATE + FEED_RATE) * beta) * TIME_STEP, 0, 1)
+  newalpha = constrain(alpha + (1.0 * laplace2d(alpha) - alpha * beta * beta + feed_rate * (1 - alpha)) * TIME_STEP, 0, 1)
+  newbeta = constrain(beta + (0.5 * laplace2d(beta) + alpha * beta * beta - (kill_rate + feed_rate) * beta) * TIME_STEP, 0, 1)
   retval = np.dstack([newalpha, newbeta])
   return retval
 
@@ -66,6 +65,19 @@ def get_color(grid):
   c_arr[:, :, 1] = constrain(55 - c, 0, 255)
   c_arr[:, :, 2] = constrain(155 - c, 0, 255)
   return c_arr
+
+
+
+cases = [(0.013 + (x % 6) * 0.002, 0.046 + floor(x / 6) * 0.002) for x in range(0, 36)]
+total_cases = len(cases)
+for case_index in range(0, total_cases):
+  (feed_rate, kill_rate) = cases[case_index]
+  print(f"({case_index+1} / {total_cases}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+print()
+case_index = 0
+(feed_rate, kill_rate) = cases[case_index]
+print(f"({case_index+1}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+main_grid = init_grid()
 
 while running:
   for event in pygame.event.get():
@@ -83,9 +95,9 @@ while running:
   screen.blit(display_surf, (0, 0))
 
   hud_pos = [10, 10]
-  HUD_FONT.render_to(screen, hud_pos, f"Feed: {FEED_RATE}", (255, 255, 255))
+  HUD_FONT.render_to(screen, hud_pos, f"Feed: {feed_rate}", (255, 255, 255))
   hud_pos[1] += 18
-  HUD_FONT.render_to(screen, hud_pos, f"Kill: {KILL_RATE}", (255, 255, 255))
+  HUD_FONT.render_to(screen, hud_pos, f"Kill: {kill_rate}", (255, 255, 255))
   hud_pos[1] += 18
   HUD_FONT.render_to(screen, hud_pos, f"Step: {step}", (255, 255, 255))
 
@@ -96,10 +108,21 @@ while running:
   fps_array = fps_array[:20]
   #print(floor(np.average(fps_array)))
 
-  if step == 800:
-    f = f"{FEED_RATE}"[2:]
-    k = f"{KILL_RATE}"[2:]
-    pygame.image.save(screen, f"output_f{f}_k{k}.png")
   step += 1
+  if step == 1200:
+    f = f"{feed_rate}"[2:5]
+    k = f"{kill_rate}"[2:5]
+    filename = f"output_f{f}_k{k}_s{step}.png"
+    pygame.image.save(screen, f"output/{filename}")
+    print(f"Saved {filename}")
+
+    case_index += 1
+    if case_index >= len(cases):
+      print("Finished all cases.")
+      break
+    (feed_rate, kill_rate) = cases[case_index]
+    print(f"({case_index+1} / {total_cases}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+    main_grid = init_grid()
+    step = 0
 
 pygame.quit()
