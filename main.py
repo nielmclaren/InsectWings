@@ -26,6 +26,12 @@ fps_array = []
 
 seed_size = 16
 
+def get_cases(feed_rate_range, kill_rate_range, num_cases_per):
+  feed_rate_step = (feed_rate_range[1] - feed_rate_range[0]) / num_cases_per
+  kill_rate_step = (kill_rate_range[1] - kill_rate_range[0]) / num_cases_per
+  return [(round(feed_rate_range[0] + (x % num_cases_per) * feed_rate_step, 3),
+           round(kill_rate_range[0] + floor(x / num_cases_per) * kill_rate_step, 3)) for x in range(0, num_cases_per * num_cases_per)]
+
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
   grid = np.zeros((grid_width, grid_height, 2), dtype=np.float32)
@@ -62,8 +68,7 @@ def get_color(grid):
   return c_arr
 
 
-
-cases = [(0.013 + (x % 6) * 0.002, 0.046 + floor(x / 6) * 0.002) for x in range(0, 36)]
+cases = get_cases((0.013, 0.023), (0.046, 0.056), 6)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
   (feed_rate, kill_rate) = cases[case_index]
