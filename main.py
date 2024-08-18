@@ -33,8 +33,8 @@ def get_cases(feed_rate, feed_rate_window_size, kill_rate, kill_rate_window_size
   kill_rate_low = kill_rate - kill_rate_window_size/2
   feed_rate_step = feed_rate_window_size / num_cases_per
   kill_rate_step = kill_rate_window_size / num_cases_per
-  return [(round(feed_rate_low + (x % num_cases_per) * feed_rate_step, 3),
-           round(kill_rate_low + floor(x / num_cases_per) * kill_rate_step, 3)) for x in range(0, num_cases_per * num_cases_per)]
+  return [(round(feed_rate_low + (x % num_cases_per) * feed_rate_step, 5),
+           round(kill_rate_low + floor(x / num_cases_per) * kill_rate_step, 5)) for x in range(0, num_cases_per * num_cases_per)]
 
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
@@ -72,7 +72,7 @@ def get_color(grid):
   return c_arr
 
 
-cases = get_cases(0.025, 0.003, 0.050, 0.003, 6)
+cases = get_cases(0.02567, 0.0003, 0.0505, 0.0003, 8)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
   (feed_rate, kill_rate) = cases[case_index]
@@ -120,9 +120,9 @@ while running:
   #print(floor(np.average(fps_array)))
 
   if step >= 1600:
-    f = f"{feed_rate}"[2:5]
-    k = f"{kill_rate}"[2:5]
-    filename = f"output_s{step}_f{f}_k{k}.png"
+    f = f"{feed_rate}"[2:7]
+    k = f"{kill_rate}"[2:7]
+    filename = f"output_{case_index}.png"
     pygame.image.save(screen, f"output/{filename}")
     print(f"Saved {filename}")
 
