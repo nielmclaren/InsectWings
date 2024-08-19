@@ -47,7 +47,11 @@ def get_cases(base_case, x_name, x_window_size, y_name, y_window_size, num_cases
   }) for index in range(0, num_cases_each * num_cases_each)]
 
 def print_case(c, total_cases):
-  print(f"({case_index+1} / {total_cases}) Diffuse A: {c.diffuse_a} Diffuse B: {c.diffuse_b} Feed rate: {c.feed_rate}, Kill rate: {c.kill_rate}")
+  print(f"({case_index+1} / {total_cases})\tDiffuse A: {
+    str(c.diffuse_a).ljust(6)}\tDiffuse B: {
+    str(c.diffuse_b).ljust(6)}\tFeed rate: {
+    str(c.feed_rate).ljust(6)}\tKill rate: {
+    str(c.kill_rate).ljust(6)}")
 
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
@@ -101,8 +105,8 @@ def render_hud_to(surf, case_index, total_cases, case, step):
 
 #base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.5, time_step=1.0)
 #cases = get_cases(base_case, 'feed_rate', 0.003, 'kill_rate', 0.003, 6)
-base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=0.92, diffuse_b=0.5, time_step=1.0)
-cases = get_cases(base_case, 'diffuse_a', 0.24, 'diffuse_b', 0.24, 6)
+base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.4, time_step=1.0)
+cases = get_cases(base_case, 'feed_rate', 0.006, 'diffuse_b', 0.24, 6)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
   print_case(cases[case_index], total_cases)
