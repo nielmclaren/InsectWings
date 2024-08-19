@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import argparse
 import dataclasses
 from dataclasses import dataclass
 from math import floor
@@ -35,6 +36,12 @@ fps_array = []
 diffuse_a = 1.0
 diffuse_b = 0.5
 seed_size = 16
+
+
+def get_args():
+  parser = argparse.ArgumentParser("./main.py")
+  parser.add_argument("case_num", help="Jump to the specified case.", type=int)
+  return parser.parse_args()
 
 def get_cases(base_case, x_name, x_window_size, y_name, y_window_size, num_cases_each):
   x_low = base_case.__dict__[x_name] - x_window_size/2
@@ -103,6 +110,9 @@ def render_hud_to(surf, case_index, total_cases, case, step):
   hud_pos[1] += 18
   HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
 
+
+args = get_args()
+
 #base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.5, time_step=1.0)
 #cases = get_cases(base_case, 'feed_rate', 0.003, 'kill_rate', 0.003, 6)
 base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.4, time_step=1.0)
@@ -112,7 +122,8 @@ for case_index in range(0, total_cases):
   print_case(cases[case_index], total_cases)
   
 print()
-case_index = 0
+case_num = args.case_num or 1
+case_index = case_num - 1
 print_case(cases[case_index], total_cases)
 main_grid = init_grid()
 
@@ -143,7 +154,7 @@ while running:
   fps_array = fps_array[:20]
   #print(floor(np.average(fps_array)))
 
-  if step >= 1600:
+  if not args.case_num and step >= 1600:
     filename = f"output_{str(case_index).zfill(3)}.png"
     pygame.image.save(screen, f"output/{filename}")
     print(f"Saved {filename}")
