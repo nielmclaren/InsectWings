@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import dataclasses
+from dataclasses import dataclass
 from math import floor
 import numpy as np
 import pygame
@@ -8,10 +10,16 @@ import pygame.freetype
 # Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
 # https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
+@dataclass
+class Case:
+    feed_rate: float = 0.0
+    kill_rate: float = 0.0
+    diffuse_a: float = 0.0
+    diffuse_b: float = 0.0
+    time_step: float = 0.0
+
 grid_width = 320
 grid_height = 32
-
-TIME_STEP = 1
 
 pygame.init()
 pygame.freetype.init()
@@ -28,13 +36,18 @@ diffuse_a = 1.0
 diffuse_b = 0.5
 seed_size = 16
 
-def get_cases(feed_rate, feed_rate_window_size, kill_rate, kill_rate_window_size, num_cases_per):
-  feed_rate_low = feed_rate - feed_rate_window_size/2
-  kill_rate_low = kill_rate - kill_rate_window_size/2
-  feed_rate_step = feed_rate_window_size / num_cases_per
-  kill_rate_step = kill_rate_window_size / num_cases_per
-  return [(round(feed_rate_low + (x % num_cases_per) * feed_rate_step, 5),
-           round(kill_rate_low + floor(x / num_cases_per) * kill_rate_step, 5)) for x in range(0, num_cases_per * num_cases_per)]
+def get_cases(base_case, x_name, x_window_size, y_name, y_window_size, num_cases_each):
+  x_low = base_case.__dict__[x_name] - x_window_size/2
+  y_low = base_case.__dict__[y_name] - y_window_size/2
+  x_step = x_window_size / num_cases_each
+  y_step = y_window_size / num_cases_each
+  return [dataclasses.replace(base_case, **{
+    x_name: round(x_low + (index % num_cases_each) * x_step, 5),
+    y_name: round(y_low + floor(index / num_cases_each) * y_step, 5),
+  }) for index in range(0, num_cases_each * num_cases_each)]
+
+def print_case(c, total_cases):
+  print(f"({case_index+1} / {total_cases}) Diffuse A: {c.diffuse_a} Diffuse B: {c.diffuse_b} Feed rate: {c.feed_rate}, Kill rate: {c.kill_rate}")
 
 def init_grid():
   # Each element is an array of two values representing the concentration of two chemicals.
@@ -55,11 +68,11 @@ def laplace2d(grid):
 def constrain(value, min_limit, max_limit):
   return np.minimum(max_limit, np.maximum(min_limit, value))
 
-def update(grid):
+def update(case, grid):
   alpha = grid[:, :, 0]
   beta = grid[:, :, 1]
-  newalpha = constrain(alpha + (diffuse_a * laplace2d(alpha) - alpha * beta * beta + feed_rate * (1 - alpha)) * TIME_STEP, 0, 1)
-  newbeta = constrain(beta + (diffuse_b * laplace2d(beta) + alpha * beta * beta - (kill_rate + feed_rate) * beta) * TIME_STEP, 0, 1)
+  newalpha = constrain(alpha + (case.diffuse_a * laplace2d(alpha) - alpha * beta * beta + case.feed_rate * (1 - alpha)) * case.time_step, 0, 1)
+  newbeta = constrain(beta + (case.diffuse_b * laplace2d(beta) + alpha * beta * beta - (case.kill_rate + case.feed_rate) * beta) * case.time_step, 0, 1)
   retval = np.dstack([newalpha, newbeta])
   return retval
 
@@ -71,16 +84,32 @@ def get_color(grid):
   c_arr[:, :, 2] = constrain(155 - c, 0, 255)
   return c_arr
 
+def render_hud_to(surf, case_index, total_cases, case, step):
+  text_color = (255, 255, 255)
+  hud_pos = [10, 10]
+  HUD_FONT.render_to(surf, hud_pos, f"Case: {case_index+1} / {total_cases}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Diffuse A: {case.diffuse_a}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Diffuse B: {case.diffuse_b}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Feed: {case.feed_rate}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Kill: {case.kill_rate}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
 
-cases = get_cases(0.02567, 0.0003, 0.0505, 0.0003, 8)
+#base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.5, time_step=1.0)
+#cases = get_cases(base_case, 'feed_rate', 0.003, 'kill_rate', 0.003, 6)
+base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=0.92, diffuse_b=0.5, time_step=1.0)
+cases = get_cases(base_case, 'diffuse_a', 0.24, 'diffuse_b', 0.24, 6)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
-  (feed_rate, kill_rate) = cases[case_index]
-  print(f"({case_index+1} / {total_cases}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+  print_case(cases[case_index], total_cases)
+  
 print()
 case_index = 0
-(feed_rate, kill_rate) = cases[case_index]
-print(f"({case_index+1}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+print_case(cases[case_index], total_cases)
 main_grid = init_grid()
 
 while running:
@@ -92,7 +121,7 @@ while running:
         running = False
 
   for i in range(8):
-    main_grid = update(main_grid)
+    main_grid = update(cases[case_index], main_grid)
     step += 1
 
   canvas = get_color(main_grid)
@@ -101,16 +130,7 @@ while running:
   screen.fill("black")
   screen.blit(display_surf, (0, 128))
 
-  hud_pos = [10, 10]
-  HUD_FONT.render_to(screen, hud_pos, f"Diffuse A: {diffuse_a}", (255, 255, 255))
-  hud_pos[1] += 18
-  HUD_FONT.render_to(screen, hud_pos, f"Diffuse B: {diffuse_b}", (255, 255, 255))
-  hud_pos[1] += 18
-  HUD_FONT.render_to(screen, hud_pos, f"Feed: {feed_rate}", (255, 255, 255))
-  hud_pos[1] += 18
-  HUD_FONT.render_to(screen, hud_pos, f"Kill: {kill_rate}", (255, 255, 255))
-  hud_pos[1] += 18
-  HUD_FONT.render_to(screen, hud_pos, f"Step: {step}", (255, 255, 255))
+  render_hud_to(screen, case_index, total_cases, cases[case_index], step)
 
   pygame.display.flip()
 
@@ -128,8 +148,7 @@ while running:
     if case_index >= len(cases):
       print("Finished all cases.")
       break
-    (feed_rate, kill_rate) = cases[case_index]
-    print(f"({case_index+1} / {total_cases}) Feed rate: {feed_rate}, Kill rate: {kill_rate}")
+    print_case(cases[case_index], total_cases)
     main_grid = init_grid()
     step = 0
 
