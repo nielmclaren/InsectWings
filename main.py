@@ -120,9 +120,7 @@ while running:
   #print(floor(np.average(fps_array)))
 
   if step >= 1600:
-    f = f"{feed_rate}"[2:7]
-    k = f"{kill_rate}"[2:7]
-    filename = f"output_{case_index}.png"
+    filename = f"output_{str(case_index).zfill(3)}.png"
     pygame.image.save(screen, f"output/{filename}")
     print(f"Saved {filename}")
 
