@@ -3,6 +3,7 @@
 import argparse
 import dataclasses
 from dataclasses import dataclass
+import imageio
 from math import floor
 import numpy as np
 import pygame
@@ -14,6 +15,7 @@ import pygame.freetype
 pygame.init()
 pygame.freetype.init()
 
+ANIMATION_STEPS_PER_FRAME = 30
 GRID_WIDTH = 320
 GRID_HEIGHT = 32
 HUD_FONT = pygame.freetype.Font("DejaVuSansMono.ttf", 12)
@@ -112,6 +114,10 @@ def save_screenshot(surf, case_index):
   pygame.image.save(surf, f"output/{filename}")
   print(f"Saved {filename}")
 
+def save_animation_frame(surf, frame_index):
+  filename = f"frame_{str(frame_index).zfill(4)}.png"
+  pygame.image.save(surf, f"output/{filename}")
+  print(f"Saved {filename}")
 
 args = get_args()
 
@@ -122,6 +128,8 @@ running = True
 step = 0
 dt = 0
 fps_array = []
+animation_steps = 0
+animation_frame_index = 0
 
 base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.4, time_step=1.0)
 cases = get_cases(base_case, 'feed_rate', 0.006, 'diffuse_b', 0.24, 6)
@@ -146,6 +154,7 @@ while running:
   for i in range(8):
     main_grid = update(cases[case_index], main_grid)
     step += 1
+    animation_steps += 1
 
   canvas = get_color(main_grid)
   display_surf = pygame.surfarray.make_surface(canvas)
@@ -161,6 +170,11 @@ while running:
 
   fps_array.append(1 / dt)
   fps_array = fps_array[:10]
+
+  if args.casenum and animation_steps >= ANIMATION_STEPS_PER_FRAME:
+    save_animation_frame(screen, animation_frame_index)
+    animation_frame_index += 1
+    animation_steps = 0
 
   if not args.casenum and step >= 1600:
     save_screenshot(screen, case_index)
