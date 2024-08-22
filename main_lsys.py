@@ -1,11 +1,14 @@
 #!/usr/bin/python3
 
 import argparse
+import dataclasses
 from dataclasses import dataclass, field
+import json
 from math import floor
 import numpy as np
 import pygame
 import pygame.freetype
+from typing import TypedDict
 
 # Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
 # https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -22,6 +25,18 @@ SCREEN_HEIGHT = 900
 screenshot_index = 0
 
 # TODO: Fullscreen?
+
+class Parameters(TypedDict):
+  num_root_segments: int
+  root_segment_len: float
+  root_segment_dir_x: float
+  root_segment_dir_y: float
+parameters = Parameters(
+  num_root_segments=12,
+  root_segment_len=100,
+  root_segment_dir_x=1,
+  root_segment_dir_y=-0.1,
+)
 
 @dataclass
 class Segment:
@@ -43,11 +58,11 @@ def get_args():
 
 def generate_root_segments():
   pos = pygame.Vector2(295, 340)
-  dir = pygame.Vector2(1, 0)
+  dir = pygame.Vector2(parameters['root_segment_dir_x'], parameters['root_segment_dir_y'])
 
   result = []
-  for _ in range(0, 12):
-    segment = RootSegment(pos=pos, dir=dir, len=100)
+  for _ in range(0, parameters['num_root_segments']):
+    segment = RootSegment(pos=pos, dir=dir, len=parameters['root_segment_len'])
     result.append(segment)
     pos = pos + (-5, 10)
     dir = dir.rotate(4)
@@ -57,7 +72,7 @@ def step_segment_and_descendants(seg):
   seg.age += 1
   for child in seg.children:
     step_segment_and_descendants(child)
-  if seg.age > 10 and not seg.children:
+  if seg.generation < 12 and seg.age > 10 and not seg.children:
     seg.children.append(Segment(generation=seg.generation + 1, dir=seg.dir.rotate(2), len=seg.len * 0.95))
 
 def render_segment_and_descendants(seg, base_pos):
@@ -74,6 +89,18 @@ def render_hud_to(surf, step, fps):
   hud_pos = [10, SCREEN_WIDTH - 10]
   text = f"FPS: {fps}"
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
+
+def load_parameters():
+  global parameters
+  with open('parameters.json', 'r') as f:
+    parameters = json.load(f)
+  print("Loaded parameters.json")
+  print(json.dumps(parameters))
+
+def save_parameters():
+  with open('parameters.json', 'w') as f:
+    json.dump(parameters, f)
+  print("Saved parameters.json")
 
 def save_screenshot(surf, index):
   filename = f"output/lsys_{str(index).zfill(3)}.png"
@@ -110,6 +137,13 @@ while running:
       elif event.key == pygame.K_r:
         save_screenshot(screen, screenshot_index)
         screenshot_index += 1
+      elif event.key == pygame.K_v:
+        save_parameters()
+      elif event.key == pygame.K_l:
+        load_parameters()
+        root_segments = generate_root_segments()
+        step = 0
+        animation_steps = 0
 
   screen.fill("black")
   screen.blit(reference_image, (-200, -300))
