@@ -30,7 +30,7 @@ class Segment:
   dir: pygame.Vector2 = (0, 0)
   len: float = 0.0
   # TODO: How to specify list[Segment] when Segment is not yet defined?
-  children: list = field(default_factory=lambda: [])
+  children: list['Segment'] = field(default_factory=lambda: [])
 
 @dataclass
 class RootSegment(Segment):
