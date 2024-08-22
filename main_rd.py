@@ -32,7 +32,7 @@ class Case:
     time_step: float = 0.0
 
 def get_args():
-  parser = argparse.ArgumentParser("./main.py")
+  parser = argparse.ArgumentParser("./main_rd.py")
   parser.add_argument("-c", "--casenum", help="Jump to the specified case.", type=int, required=False)
   return parser.parse_args()
 
