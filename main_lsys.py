@@ -41,6 +41,18 @@ def get_args():
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
+def generate_root_segments():
+  pos = pygame.Vector2(295, 340)
+  dir = pygame.Vector2(1, 0)
+
+  result = []
+  for _ in range(0, 12):
+    segment = RootSegment(pos=pos, dir=dir, len=100)
+    result.append(segment)
+    pos = pos + (-5, 10)
+    dir = dir.rotate(4)
+  return result
+
 def step_segment_and_descendants(seg):
   seg.age += 1
   for child in seg.children:
@@ -81,8 +93,9 @@ clock = pygame.time.Clock()
 running = True
 step = 0
 dt = 0
-root = RootSegment(pos=pygame.Vector2(100, 100), dir=pygame.Vector2(1, 0), len=100)
-root_segments = [root]
+reference_image = pygame.image.load('assets/orthoptera_dark.png')
+reference_image = pygame.transform.scale_by(reference_image, 4)
+root_segments = generate_root_segments()
 fps_array = []
 animation_steps = 0
 animation_frame_index = 0
@@ -99,6 +112,7 @@ while running:
         screenshot_index += 1
 
   screen.fill("black")
+  screen.blit(reference_image, (-200, -300))
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
