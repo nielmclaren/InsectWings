@@ -28,12 +28,26 @@ screenshot_index = 0
 
 class Parameters(TypedDict):
   num_root_segments: int
+  root_segment_pos: tuple[float, float]
+  root_segment_pos_offset: tuple[float, float]
   root_segment_len: float
+  root_segment_len_factor: float
   root_segment_dir: tuple[float, float]
+  root_segment_dir_offset: float
+  segment_len_factor: float
+  segment_dir_offset: float
+  max_generations: int
 parameters = Parameters(
   num_root_segments=12,
+  root_segment_pos=(295, 340),
+  root_segment_pos_offset=(-5, 10),
   root_segment_len=100,
+  root_segment_len_factor=0.9,
   root_segment_dir=(1, -0.2),
+  root_segment_dir_offset=4,
+  segment_len_factor=0.95,
+  segment_dir_offset=2,
+  max_generations=12
 )
 
 @dataclass
@@ -55,23 +69,25 @@ def get_args():
   return parser.parse_args()
 
 def generate_root_segments():
-  pos = pygame.Vector2(295, 340)
+  pos = pygame.Vector2(parameters['root_segment_pos'])
   dir = pygame.Vector2(parameters['root_segment_dir'])
 
   result = []
   for _ in range(0, parameters['num_root_segments']):
     segment = RootSegment(pos=pos, dir=dir, len=parameters['root_segment_len'])
     result.append(segment)
-    pos = pos + (-5, 10)
-    dir = dir.rotate(4)
+    pos = pos + parameters['root_segment_pos_offset']
+    dir = dir.rotate(parameters['root_segment_dir_offset'])
   return result
 
 def step_segment_and_descendants(seg):
   seg.age += 1
   for child in seg.children:
     step_segment_and_descendants(child)
-  if seg.generation < 12 and seg.age > 10 and not seg.children:
-    seg.children.append(Segment(generation=seg.generation + 1, dir=seg.dir.rotate(2), len=seg.len * 0.95))
+  if seg.generation < parameters['max_generations'] and seg.age > 10 and not seg.children:
+    seg.children.append(Segment(generation=seg.generation + 1,
+      dir=seg.dir.rotate(parameters['segment_dir_offset']),
+      len=seg.len * parameters['segment_len_factor']))
 
 def render_segment_and_descendants(seg, base_pos):
   next_pos = base_pos + seg.dir * seg.len
@@ -144,6 +160,7 @@ while running:
 
   screen.fill("black")
   screen.blit(reference_image, (-200, -300))
+
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
