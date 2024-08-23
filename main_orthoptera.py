@@ -50,7 +50,7 @@ class RootSegment(Segment):
   pos: pygame.Vector2 = (0, 0)
 
 def get_args():
-  parser = argparse.ArgumentParser("./main_lsys.py")
+  parser = argparse.ArgumentParser("./main_orthoptera.py")
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
@@ -100,7 +100,7 @@ def save_parameters():
   print("Saved parameters.json")
 
 def save_screenshot(surf, index):
-  filename = f"output/lsys_{str(index).zfill(3)}.png"
+  filename = f"output/orthoptera_{str(index).zfill(3)}.png"
   pygame.image.save(surf, f"{filename}")
   print(f"Saved {filename}")
 
@@ -112,7 +112,7 @@ def save_animation_frame(surf, frame_index):
 args = get_args()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("L-System")
+pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
 step = 0
