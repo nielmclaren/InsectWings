@@ -29,13 +29,11 @@ screenshot_index = 0
 class Parameters(TypedDict):
   num_root_segments: int
   root_segment_len: float
-  root_segment_dir_x: float
-  root_segment_dir_y: float
+  root_segment_dir: tuple[float, float]
 parameters = Parameters(
   num_root_segments=12,
   root_segment_len=100,
-  root_segment_dir_x=1,
-  root_segment_dir_y=-0.1,
+  root_segment_dir=(1, -0.2),
 )
 
 @dataclass
@@ -58,7 +56,7 @@ def get_args():
 
 def generate_root_segments():
   pos = pygame.Vector2(295, 340)
-  dir = pygame.Vector2(parameters['root_segment_dir_x'], parameters['root_segment_dir_y'])
+  dir = pygame.Vector2(parameters['root_segment_dir'])
 
   result = []
   for _ in range(0, parameters['num_root_segments']):
@@ -95,7 +93,6 @@ def load_parameters():
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
   print("Loaded parameters.json")
-  print(json.dumps(parameters))
 
 def save_parameters():
   with open('parameters.json', 'w') as f:
