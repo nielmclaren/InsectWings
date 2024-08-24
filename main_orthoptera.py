@@ -54,14 +54,8 @@ parameters = Parameters(
 class Segment:
   age: int = 0
   generation: int = 0
-  dir: pygame.Vector2 = (0, 0)
-  len: float = 0.0
   # TODO: How to specify list[Segment] when Segment is not yet defined?
   children: list['Segment'] = field(default_factory=lambda: [])
-
-@dataclass
-class RootSegment(Segment):
-  pos: pygame.Vector2 = (0, 0)
 
 def get_args():
   parser = argparse.ArgumentParser("./main_orthoptera.py")
@@ -69,15 +63,10 @@ def get_args():
   return parser.parse_args()
 
 def generate_root_segments():
-  pos = pygame.Vector2(parameters['root_segment_pos'])
-  dir = pygame.Vector2(parameters['root_segment_dir'])
-
   result = []
   for _ in range(0, parameters['num_root_segments']):
-    segment = RootSegment(pos=pos, dir=dir, len=parameters['root_segment_len'])
+    segment = Segment()
     result.append(segment)
-    pos = pos + parameters['root_segment_pos_offset']
-    dir = dir.rotate(parameters['root_segment_dir_offset'])
   return result
 
 def step_segment_and_descendants(seg):
@@ -85,15 +74,16 @@ def step_segment_and_descendants(seg):
   for child in seg.children:
     step_segment_and_descendants(child)
   if seg.generation < parameters['max_generations'] and seg.age > 10 and not seg.children:
-    seg.children.append(Segment(generation=seg.generation + 1,
-      dir=seg.dir.rotate(parameters['segment_dir_offset']),
-      len=seg.len * parameters['segment_len_factor']))
+    seg.children.append(Segment(generation=seg.generation + 1))
 
-def render_segment_and_descendants(seg, base_pos):
-  next_pos = base_pos + seg.dir * seg.len
-  pygame.draw.line(screen, (255, 255, 255), base_pos, next_pos, 2)
+def render_segment_and_descendants(seg, curr_pos, curr_dir, curr_len):
+  next_pos = curr_pos + curr_dir * curr_len
+  next_dir = curr_dir.rotate(parameters['segment_dir_offset'])
+  next_len = curr_len * parameters['segment_len_factor']
+
+  pygame.draw.line(screen, (255, 255, 255), curr_pos, next_pos, 2)
   for child in seg.children:
-    render_segment_and_descendants(child, next_pos)
+    render_segment_and_descendants(child, next_pos, next_dir, next_len)
 
 def render_hud_to(surf, step, fps):
   text_color = (255, 255, 255)
@@ -164,8 +154,14 @@ while running:
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
+  root_segment_pos = pygame.Vector2(parameters['root_segment_pos'])
+  root_segment_dir = pygame.Vector2(parameters['root_segment_dir'])
+  root_segment_len = parameters['root_segment_len']
   for root_segment in root_segments:
-    render_segment_and_descendants(root_segment, root_segment.pos)
+    render_segment_and_descendants(root_segment, root_segment_pos, root_segment_dir, root_segment_len)
+    root_segment_pos += pygame.Vector2(parameters['root_segment_pos_offset'])
+    root_segment_dir = root_segment_dir.rotate(parameters['root_segment_dir_offset'])
+    root_segment_len += parameters['root_segment_len_factor']
 
   render_hud_to(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
 
