@@ -1,0 +1,10 @@
+{
+  "defaults": {
+    "colours": {
+      "dark_bg": "#4E719B",
+      "normal_border": "#97BBD5",
+      "normal_bg": "#6FA9BD",
+      "normal_text": "White"
+    }
+  }
+}

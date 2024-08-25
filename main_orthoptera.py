@@ -1,17 +1,14 @@
 #!./venv/bin/python3
 
 import argparse
-import dataclasses
 from dataclasses import dataclass, field
 import json
 from math import floor
 import numpy as np
 import pygame
 import pygame.freetype
+import pygame_gui
 from typing import TypedDict
-
-# Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
-# https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 pygame.init()
 pygame.freetype.init()
@@ -123,6 +120,16 @@ clock = pygame.time.Clock()
 running = True
 step = 0
 dt = 0
+
+uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
+segment_dir_offset_slider = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
+  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - 250, 325), (250, 30)),
+  start_value=parameters['segment_dir_offset'], value_range=(-20, 20), click_increment=1,
+  manager=uimanager)
+segment_dir_offset_label = pygame_gui.elements.ui_text_box.UITextBox("42",
+  relative_rect=pygame.Rect((segment_dir_offset_slider.get_relative_rect()[0] - 5 - 40, 325), (40, 30)),
+  manager=uimanager)
+
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
 root_segments = generate_root_segments()
@@ -147,6 +154,13 @@ while running:
         root_segments = generate_root_segments()
         step = 0
         animation_steps = 0
+    elif event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
+      if event.ui_element == segment_dir_offset_slider:
+        parameters['segment_dir_offset'] = segment_dir_offset_slider.get_current_value()
+
+    uimanager.process_events(event)
+
+  uimanager.update(dt)
 
   screen.fill("black")
   screen.blit(reference_image, (-200, -300))
@@ -164,6 +178,8 @@ while running:
     root_segment_len += parameters['root_segment_len_factor']
 
   render_hud_to(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
+  
+  uimanager.draw_ui(screen)
 
   pygame.display.flip()
 
