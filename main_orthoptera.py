@@ -52,16 +52,27 @@ def step_segment_and_descendants(seg):
   if seg.generation < parameters['max_generations'] and seg.age > 10 and not seg.children:
     seg.children.append(Segment(generation=seg.generation + 1))
 
-def render_segment_and_descendants(seg, curr_pos, curr_dir, curr_len):
+def render_segment_and_descendants(surf, seg, curr_pos, curr_dir, curr_len):
   next_pos = curr_pos + curr_dir * curr_len
   next_dir = curr_dir.rotate(parameters['segment_dir_offset'])
   next_len = curr_len * parameters['segment_len_factor']
 
-  pygame.draw.line(screen, (255, 255, 255), curr_pos, next_pos, 2)
+  pygame.draw.line(surf, (255, 255, 255), curr_pos, next_pos, 2)
   for child in seg.children:
-    render_segment_and_descendants(child, next_pos, next_dir, next_len)
+    render_segment_and_descendants(surf, child, next_pos, next_dir, next_len)
 
-def render_hud_to(surf, step, fps):
+def render_root_segments_and_descendants(surf):
+  p = subdict(parameters, 'root_segment')
+  pos = pygame.Vector2(p['pos'])
+  dir = pygame.Vector2(p['dir'])
+  length = p['len']
+  for root_segment in root_segments:
+    render_segment_and_descendants(surf, root_segment, pos, dir, length)
+    pos += pygame.Vector2(p['pos_offset'])
+    dir = dir.rotate(p['dir_offset'])
+    length += p['len_factor']
+
+def render_hud(surf, step, fps):
   text_color = (255, 255, 255)
   hud_pos = [10, 10]
   HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
@@ -74,6 +85,7 @@ def load_parameters():
   global parameters
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
+  segment_dir_offset_slider.set_current_value(parameters['segment_dir_offset'])
   print("Loaded parameters.json")
 
 def save_parameters():
@@ -147,17 +159,9 @@ while running:
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
-  p = subdict(parameters, 'root_segment')
-  root_segment_pos = pygame.Vector2(p['pos'])
-  root_segment_dir = pygame.Vector2(p['dir'])
-  root_segment_len = p['len']
-  for root_segment in root_segments:
-    render_segment_and_descendants(root_segment, root_segment_pos, root_segment_dir, root_segment_len)
-    root_segment_pos += pygame.Vector2(p['pos_offset'])
-    root_segment_dir = root_segment_dir.rotate(p['dir_offset'])
-    root_segment_len += p['len_factor']
+  render_root_segments_and_descendants(screen)
 
-  render_hud_to(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
+  render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
   
   uimanager.draw_ui(screen)
 
