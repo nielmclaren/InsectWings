@@ -5,10 +5,11 @@ from dataclasses import dataclass, field
 import json
 from math import floor
 import numpy as np
+from parameters import Parameters
 import pygame
 import pygame.freetype
 import pygame_gui
-from parameters import Parameters
+from subdict import subdict
 
 pygame.init()
 pygame.freetype.init()
@@ -146,14 +147,15 @@ while running:
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
-  root_segment_pos = pygame.Vector2(parameters['root_segment_pos'])
-  root_segment_dir = pygame.Vector2(parameters['root_segment_dir'])
-  root_segment_len = parameters['root_segment_len']
+  p = subdict(parameters, 'root_segment')
+  root_segment_pos = pygame.Vector2(p['pos'])
+  root_segment_dir = pygame.Vector2(p['dir'])
+  root_segment_len = p['len']
   for root_segment in root_segments:
     render_segment_and_descendants(root_segment, root_segment_pos, root_segment_dir, root_segment_len)
-    root_segment_pos += pygame.Vector2(parameters['root_segment_pos_offset'])
-    root_segment_dir = root_segment_dir.rotate(parameters['root_segment_dir_offset'])
-    root_segment_len += parameters['root_segment_len_factor']
+    root_segment_pos += pygame.Vector2(p['pos_offset'])
+    root_segment_dir = root_segment_dir.rotate(p['dir_offset'])
+    root_segment_len += p['len_factor']
 
   render_hud_to(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
   

@@ -25,6 +25,3 @@ class Parameters(TypedDict):
       segment_dir_offset=2,
       max_generations=12
     )
-
-  def group(prefix):
-    pass
