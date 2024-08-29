@@ -90,7 +90,7 @@ def load_parameters():
 
 def save_parameters():
   with open('parameters.json', 'w') as f:
-    json.dump(parameters, f)
+    json.dump(parameters, f, indent=2)
   print("Saved parameters.json")
 
 def save_screenshot(surf, index):
