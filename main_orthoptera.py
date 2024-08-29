@@ -63,14 +63,12 @@ def render_segment_and_descendants(surf, seg, curr_pos, curr_dir, curr_len):
 
 def render_root_segments_and_descendants(surf):
   p = subdict(parameters, 'root_segment')
-  pos = pygame.Vector2(p['pos'])
-  dir = pygame.Vector2(p['dir'])
   length = p['len']
-  for root_segment in root_segments:
+  for index, root_segment in enumerate(root_segments):
+    pos = pygame.Vector2(p['pos_quadratic']) * pow(index, 2) + pygame.Vector2(p['pos_linear']) * index + pygame.Vector2(p['pos_const'])
+    dir = pygame.Vector2(p['dir']).rotate(index * p['dir_offset'])
+    length = p['len'] + index * p['len_factor']
     render_segment_and_descendants(surf, root_segment, pos, dir, length)
-    pos += pygame.Vector2(p['pos_offset'])
-    dir = dir.rotate(p['dir_offset'])
-    length += p['len_factor']
 
 def render_hud(surf, step, fps):
   text_color = (255, 255, 255)

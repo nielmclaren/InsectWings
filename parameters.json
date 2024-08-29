@@ -1,12 +1,16 @@
 {
   "num_root_segments": 12,
-  "root_segment_pos": [
+  "root_segment_pos_const": [
     295,
     340
   ],
-  "root_segment_pos_offset": [
+  "root_segment_pos_linear": [
     -5,
     10
+  ],
+  "root_segment_pos_quadratic": [
+    0,
+    0
   ],
   "root_segment_len": 100,
   "root_segment_len_factor": 0.9,
