@@ -5,10 +5,12 @@ from dataclasses import dataclass, field
 import json
 from math import floor
 import numpy as np
+import pygame_gui.elements.ui_panel
 from parameters import Parameters
 import pygame
 import pygame.freetype
 import pygame_gui
+from slider_panel import SliderPanel
 from subdict import subdict
 
 pygame.init()
@@ -83,7 +85,7 @@ def load_parameters():
   global parameters
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
-  segment_dir_offset_slider.set_current_value(parameters['segment_dir_offset'])
+  # TODO: Set new Parameters on the SliderPanel.
   print("Loaded parameters.json")
 
 def save_parameters():
@@ -111,13 +113,12 @@ step = 0
 dt = 0
 
 uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
-segment_dir_offset_slider = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
-  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - 250, 325), (250, 30)),
-  start_value=parameters['segment_dir_offset'], value_range=(-20, 20), click_increment=1,
+slider_panel = SliderPanel(
+  parameters=parameters,
+  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - 320, 325), (300, 400)),
   manager=uimanager)
-segment_dir_offset_label = pygame_gui.elements.ui_text_box.UITextBox("42",
-  relative_rect=pygame.Rect((segment_dir_offset_slider.get_relative_rect()[0] - 5 - 40, 325), (40, 30)),
-  manager=uimanager)
+slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
+slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
@@ -143,10 +144,8 @@ while running:
         root_segments = generate_root_segments()
         step = 0
         animation_steps = 0
-    elif event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
-      if event.ui_element == segment_dir_offset_slider:
-        parameters['segment_dir_offset'] = segment_dir_offset_slider.get_current_value()
 
+    slider_panel.process_events(event)
     uimanager.process_events(event)
 
   uimanager.update(dt)
