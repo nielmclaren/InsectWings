@@ -2,9 +2,12 @@ from typing import TypedDict
 
 class Parameters(TypedDict):
   num_root_segments: int
-  root_segment_pos_const: tuple[float, float]
-  root_segment_pos_linear: tuple[float, float]
-  root_segment_pos_quadratic: tuple[float, float]
+  root_segment_pos_const_x: float
+  root_segment_pos_const_y: float
+  root_segment_pos_linear_x: float
+  root_segment_pos_linear_y: float
+  root_segment_pos_quadratic_x: float
+  root_segment_pos_quadratic_y: float
   root_segment_len: float
   root_segment_len_factor: float
   root_segment_dir: tuple[float, float]
@@ -16,9 +19,12 @@ class Parameters(TypedDict):
   def defaults():
     return Parameters(
       num_root_segments=12,
-      root_segment_pos_const=(295, 340),
-      root_segment_pos_linear=(-5, 10),
-      root_segment_pos_quadratic=(0, 0),
+      root_segment_pos_const_x=295,
+      root_segment_pos_const_y=340,
+      root_segment_pos_linear_x=-5,
+      root_segment_pos_linear_y=10,
+      root_segment_pos_quadratic_x=0,
+      root_segment_pos_quadratic_y=0,
       root_segment_len=100,
       root_segment_len_factor=0.9,
       root_segment_dir=(1, -0.2),

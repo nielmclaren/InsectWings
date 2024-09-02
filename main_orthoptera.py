@@ -21,6 +21,7 @@ HUD_FONT = pygame.freetype.Font("DejaVuSansMono.ttf", 12)
 MAX_FPS = 60
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
+SLIDER_PANEL_WIDTH = 350
 
 screenshot_index = 0
 
@@ -63,11 +64,14 @@ def render_segment_and_descendants(surf, seg, curr_pos, curr_dir, curr_len):
   for child in seg.children:
     render_segment_and_descendants(surf, child, next_pos, next_dir, next_len)
 
+def param_to_vector2(parameters, prefix):
+  return pygame.Vector2(parameters[f"{prefix}_x"], parameters[f"{prefix}_y"])
+
 def render_root_segments_and_descendants(surf):
   p = subdict(parameters, 'root_segment')
   length = p['len']
   for index, root_segment in enumerate(root_segments):
-    pos = pygame.Vector2(p['pos_quadratic']) * pow(index, 2) + pygame.Vector2(p['pos_linear']) * index + pygame.Vector2(p['pos_const'])
+    pos = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + param_to_vector2(p, 'pos_linear') * index + param_to_vector2(p, 'pos_const')
     dir = pygame.Vector2(p['dir']).rotate(index * p['dir_offset'])
     length = p['len'] + index * p['len_factor']
     render_segment_and_descendants(surf, root_segment, pos, dir, length)
@@ -82,9 +86,10 @@ def render_hud(surf, step, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def load_parameters():
-  global parameters
+  global parameters, slider_panel
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
+    slider_panel.set_parameters(parameters)
   # TODO: Set new Parameters on the SliderPanel.
   print("Loaded parameters.json")
 
@@ -115,10 +120,16 @@ dt = 0
 uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
 slider_panel = SliderPanel(
   parameters=parameters,
-  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - 320, 325), (300, 400)),
+  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
 slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
 slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
+slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
+slider_panel.add_slider("root_segment_pos_const_y", "int", "Root Segment Pos Const Y", (0, 1080), click_increment=120)
+slider_panel.add_slider("root_segment_pos_linear_x", "float", "Root Segment Pos Linear X", (-50, 50), click_increment=5)
+slider_panel.add_slider("root_segment_pos_linear_y", "float", "Root Segment Pos Linear Y", (-50, 50), click_increment=5)
+slider_panel.add_slider("root_segment_pos_quadratic_x", "float", "Root Segment Pos Quadratic X", (-5, 5), click_increment=0.5)
+slider_panel.add_slider("root_segment_pos_quadratic_y", "float", "Root Segment Pos Quadratic Y", (-5, 5), click_increment=0.5)
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
