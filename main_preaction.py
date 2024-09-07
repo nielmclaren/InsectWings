@@ -3,11 +3,11 @@
 import argparse
 import dataclasses
 from dataclasses import dataclass
-import imageio
 from math import floor
 import numpy as np
 import pygame
 import pygame.freetype
+import random
 
 # Reaction-Diffusion algorithm adapted from Reddit user Doormatty.
 # https://www.reddit.com/r/Python/comments/og8vh6/comment/h4k2408/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -33,15 +33,15 @@ class Case:
     time_step: float = 0.0
 
 def get_args():
-  parser = argparse.ArgumentParser("./main_rd.py")
+  parser = argparse.ArgumentParser("./main_preaction.py")
   parser.add_argument("-c", "--casenum", help="Jump to the specified case.", type=int, required=False)
   return parser.parse_args()
 
-def get_cases(base_case, x_name, x_window_size, y_name, y_window_size, num_cases_each):
-  x_low = base_case.__dict__[x_name] - x_window_size/2
-  y_low = base_case.__dict__[y_name] - y_window_size/2
-  x_step = x_window_size / num_cases_each
-  y_step = y_window_size / num_cases_each
+def get_cases(base_case, x_name, x_range, y_name, y_range, num_cases_each):
+  x_low = x_range[0]
+  y_low = y_range[0]
+  x_step = (x_range[1] - x_range[0]) / (num_cases_each - 1)
+  y_step = (y_range[1] - y_range[0]) / (num_cases_each - 1)
   return [dataclasses.replace(base_case, **{
     x_name: round(x_low + (index % num_cases_each) * x_step, 5),
     y_name: round(y_low + floor(index / num_cases_each) * y_step, 5),
@@ -79,7 +79,7 @@ def constrain(value, min_limit, max_limit):
 def update(case, grid):
   alpha = grid[:, :, 0]
   beta = grid[:, :, 1]
-  p_reaction = case.p_reaction
+  p_reaction = np.random.uniform(case.p_reaction, 1.0, size=(GRID_WIDTH, GRID_HEIGHT))
   newalpha = constrain(alpha + (case.diffuse_a * laplace2d(alpha) - p_reaction * alpha * beta * beta + case.feed_rate * (1 - alpha)) * case.time_step, 0, 1)
   newbeta = constrain(beta + (case.diffuse_b * laplace2d(beta) + p_reaction * alpha * beta * beta - (case.kill_rate + case.feed_rate) * beta) * case.time_step, 0, 1)
   retval = np.dstack([newalpha, newbeta])
@@ -136,8 +136,8 @@ fps_array = []
 animation_steps = 0
 animation_frame_index = 0
 
-base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.4, p_reaction=0.75, time_step=1.0)
-cases = get_cases(base_case, 'kill_rate', 0.05, 'p_reaction', 0.75, 6)
+base_case = Case(feed_rate=0.025, kill_rate=0.05, diffuse_a=1.0, diffuse_b=0.4, p_reaction=0.85, time_step=1.0)
+cases = get_cases(base_case, 'kill_rate', (0.045, 0.06), 'p_reaction', (0.6, 1.0), 6)
 total_cases = len(cases)
 for case_index in range(0, total_cases):
   print_case(case_index, cases[case_index], total_cases)
