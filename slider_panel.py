@@ -1,16 +1,13 @@
-from dataclasses import dataclass, field
-
+from dataclasses import dataclass
 import pygame
 import pygame_gui
-from typing import Union, Dict, Optional, Iterator
 from pygame_gui.core import ObjectID
-from pygame_gui.core.interfaces import IUIManagerInterface, IUIElementInterface
-from pygame_gui.core.interfaces import IContainerLikeInterface, IUIContainerInterface
+from pygame_gui.core.interfaces import IUIManagerInterface
+from pygame_gui.core.interfaces import IContainerLikeInterface
+from pygame_gui.core import UIElement
+from pygame_gui.core.gui_type_hints import RectLike
+from typing import Union, Dict, Optional
 
-from pygame_gui.core import UIElement, UIContainer
-from pygame_gui.core.drawable_shapes import RectDrawableShape, RoundedRectangleShape
-
-from pygame_gui.core.gui_type_hints import Coordinate, RectLike
 from parameters import Parameters
 
 MARGIN = 4
