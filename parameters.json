@@ -1,11 +1,11 @@
 {
   "num_root_segments": 12,
   "root_segment_pos_const_x": 295,
-  "root_segment_pos_const_y": 340,
-  "root_segment_pos_linear_x": -5,
-  "root_segment_pos_linear_y": 10,
-  "root_segment_pos_quadratic_x": 0,
-  "root_segment_pos_quadratic_y": -2.3383084577114426,
+  "root_segment_pos_const_y": 339,
+  "root_segment_pos_linear_x": 4.950248756218912,
+  "root_segment_pos_linear_y": 11.492537313432841,
+  "root_segment_pos_quadratic_x": -1.144278606965174,
+  "root_segment_pos_quadratic_y": 0,
   "root_segment_len": 100,
   "root_segment_len_factor": 0.9,
   "root_segment_dir": [
@@ -14,6 +14,6 @@
   ],
   "root_segment_dir_offset": 4,
   "segment_len_factor": 0.95,
-  "segment_dir_offset": 2,
+  "segment_dir_offset": 3,
   "max_generations": 12
 }
