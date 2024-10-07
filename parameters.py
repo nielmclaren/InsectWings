@@ -11,8 +11,12 @@ class Parameters(TypedDict):
   root_segment_pos_quadratic_y: float
   root_segment_len: float
   root_segment_len_factor: float
-  root_segment_dir: tuple[float, float]
-  root_segment_dir_offset: float
+  root_segment_dir_const_x: float
+  root_segment_dir_const_y: float
+  root_segment_dir_linear_x: float
+  root_segment_dir_linear_y: float
+  root_segment_dir_quadratic_x: float
+  root_segment_dir_quadratic_y: float
   segment_len_factor: float
   segment_dir_offset: float
   max_generations: int
@@ -29,8 +33,12 @@ class Parameters(TypedDict):
       root_segment_pos_quadratic_y=0,
       root_segment_len=100,
       root_segment_len_factor=0.9,
-      root_segment_dir=(1, -0.2),
-      root_segment_dir_offset=4,
+      root_segment_dir_const_x=1,
+      root_segment_dir_const_y=-0.2,
+      root_segment_dir_linear_x=0,
+      root_segment_dir_linear_y=0,
+      root_segment_dir_quadratic_x=0,
+      root_segment_dir_quadratic_y=0,
       segment_len_factor=0.95,
       segment_dir_offset=2,
       max_generations=12

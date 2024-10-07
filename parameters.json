@@ -9,11 +9,12 @@
   "root_segment_pos_quadratic_y": 0,
   "root_segment_len": 100,
   "root_segment_len_factor": 0.9,
-  "root_segment_dir": [
-    1,
-    -0.2
-  ],
-  "root_segment_dir_offset": 4,
+  "root_segment_dir_const_x": 4.601990049751244,
+  "root_segment_dir_const_y": 0.32338308457711307,
+  "root_segment_dir_linear_x": -0.49751243781094523,
+  "root_segment_dir_linear_y": 0.3482587064676608,
+  "root_segment_dir_quadratic_x": 0.00995024875621886,
+  "root_segment_dir_quadratic_y": 0.0,
   "segment_len_factor": 0.95,
   "segment_dir_offset": 3,
   "max_generations": 12

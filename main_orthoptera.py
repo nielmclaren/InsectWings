@@ -72,8 +72,12 @@ def render_root_segments_and_descendants(surf):
   p = subdict(parameters, 'root_segment')
   length = p['len']
   for index, root_segment in enumerate(root_segments):
-    pos = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + param_to_vector2(p, 'pos_linear') * index + param_to_vector2(p, 'pos_const')
-    dir = pygame.Vector2(p['dir']).rotate(index * p['dir_offset'])
+    pos = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + \
+      param_to_vector2(p, 'pos_linear') * index + \
+      param_to_vector2(p, 'pos_const')
+    dir = param_to_vector2(p, 'dir_quadratic') * pow(index, 2) + \
+      param_to_vector2(p, 'dir_linear') * index + \
+      param_to_vector2(p, 'dir_const')
     length = p['len'] + index * p['len_factor']
     render_segment_and_descendants(surf, root_segment, pos, dir, length)
 
@@ -126,13 +130,19 @@ slider_panel = SliderPanel(
   manager=uimanager)
 slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
 slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
-slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
-slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
-slider_panel.add_slider("root_segment_pos_const_y", "int", "Root Segment Pos Const Y", (0, 1080), click_increment=120)
-slider_panel.add_slider("root_segment_pos_linear_x", "float", "Root Segment Pos Linear X", (-50, 50), click_increment=5)
-slider_panel.add_slider("root_segment_pos_linear_y", "float", "Root Segment Pos Linear Y", (-50, 50), click_increment=5)
-slider_panel.add_slider("root_segment_pos_quadratic_x", "float", "Root Segment Pos Quadratic X", (-5, 5), click_increment=0.5)
-slider_panel.add_slider("root_segment_pos_quadratic_y", "float", "Root Segment Pos Quadratic Y", (-5, 5), click_increment=0.5)
+# slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
+# slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
+# slider_panel.add_slider("root_segment_pos_const_y", "int", "Root Segment Pos Const Y", (0, 1080), click_increment=120)
+# slider_panel.add_slider("root_segment_pos_linear_x", "float", "Root Segment Pos Linear X", (-50, 50), click_increment=5)
+# slider_panel.add_slider("root_segment_pos_linear_y", "float", "Root Segment Pos Linear Y", (-50, 50), click_increment=5)
+# slider_panel.add_slider("root_segment_pos_quadratic_x", "float", "Root Segment Pos Quadratic X", (-5, 5), click_increment=0.5)
+# slider_panel.add_slider("root_segment_pos_quadratic_y", "float", "Root Segment Pos Quadratic Y", (-5, 5), click_increment=0.5)
+slider_panel.add_slider("root_segment_dir_const_x", "float", "Root Segment Dir Const X", (-10, 10), click_increment=0.1)
+slider_panel.add_slider("root_segment_dir_const_y", "float", "Root Segment Dir Const Y", (-10, 10), click_increment=0.1)
+slider_panel.add_slider("root_segment_dir_linear_x", "float", "Root Segment Dir Linear X", (-5, 5), click_increment=0.05)
+slider_panel.add_slider("root_segment_dir_linear_y", "float", "Root Segment Dir Linear Y", (-5, 5), click_increment=0.05)
+slider_panel.add_slider("root_segment_dir_quadratic_x", "float", "Root Segment Dir Quadratic X", (-0.5, 0.5), click_increment=0.005)
+slider_panel.add_slider("root_segment_dir_quadratic_y", "float", "Root Segment Dir Quadratic Y", (-0.5, 0.5), click_increment=0.005)
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
