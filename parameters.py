@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 class Parameters(TypedDict):
+  alpha: int
   num_root_segments: int
   root_segment_pos_const_x: float
   root_segment_pos_const_y: float
@@ -18,6 +19,7 @@ class Parameters(TypedDict):
 
   def defaults():
     return Parameters(
+      alpha=96,
       num_root_segments=12,
       root_segment_pos_const_x=295,
       root_segment_pos_const_y=340,

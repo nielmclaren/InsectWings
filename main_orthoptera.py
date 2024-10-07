@@ -60,7 +60,8 @@ def render_segment_and_descendants(surf, seg, curr_pos, curr_dir, curr_len):
   next_dir = curr_dir.rotate(parameters['segment_dir_offset'])
   next_len = curr_len * parameters['segment_len_factor']
 
-  pygame.draw.line(surf, (255, 255, 255), curr_pos, next_pos, 2)
+  color = pygame.Color(255, 255, 255, parameters['alpha'])
+  pygame.draw.line(surf, color, curr_pos, next_pos, 2)
   for child in seg.children:
     render_segment_and_descendants(surf, child, next_pos, next_dir, next_len)
 
@@ -111,6 +112,7 @@ def save_animation_frame(surf, frame_index):
 args = get_args()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+alpha_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
@@ -122,6 +124,7 @@ slider_panel = SliderPanel(
   parameters=parameters,
   relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
+slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
 slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
 slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
 slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
@@ -167,7 +170,9 @@ while running:
   for root_segment in root_segments:
     step_segment_and_descendants(root_segment)
 
-  render_root_segments_and_descendants(screen)
+  alpha_surf.fill((0, 0, 0, 0))
+  render_root_segments_and_descendants(alpha_surf)
+  screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
   
