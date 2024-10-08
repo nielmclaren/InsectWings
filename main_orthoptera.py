@@ -26,7 +26,6 @@ SLIDER_PANEL_WIDTH = 350
 screenshot_index = 0
 
 parameters:Parameters = Parameters.defaults()
-prev_max_generations = 0
 
 @dataclass
 class Segment:
@@ -40,17 +39,19 @@ def get_args():
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
-def generate_segment_and_descendants(segment):
-  if segment.generation < parameters['max_generations'] and len(segment.children) < 1:
+def generate_segment_and_descendants(index, segment):
+  p = subdict(parameters, 'max_generations')
+  max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
+  if segment.generation < max_generations and len(segment.children) < 1:
     child_segment = Segment(generation=segment.generation + 1)
     segment.children.append(child_segment)
-    generate_segment_and_descendants(child_segment)
+    generate_segment_and_descendants(index, child_segment)
 
 def generate_segments():
   result = []
-  for _ in range(0, parameters['num_root_segments']):
+  for index in range(0, parameters['num_root_segments']):
     root_segment = Segment()
-    generate_segment_and_descendants(root_segment)
+    generate_segment_and_descendants(index, root_segment)
     result.append(root_segment)
 
   return result
@@ -75,10 +76,9 @@ def render_root_segments_and_descendants(surf):
     pos = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + \
       param_to_vector2(p, 'pos_linear') * index + \
       param_to_vector2(p, 'pos_const')
-    dir = param_to_vector2(p, 'dir_quadratic') * pow(index, 2) + \
+    dir = (param_to_vector2(p, 'dir_quadratic') * pow(index, 2) + \
       param_to_vector2(p, 'dir_linear') * index + \
-      param_to_vector2(p, 'dir_const')
-    length = p['len'] + index * p['len_factor']
+      param_to_vector2(p, 'dir_const')).normalize()
     render_segment_and_descendants(surf, root_segment, pos, dir, length)
 
 def render_hud(surf, step, fps):
@@ -95,7 +95,6 @@ def load_parameters():
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
     slider_panel.set_parameters(parameters)
-  # TODO: Set new Parameters on the SliderPanel.
   print("Loaded parameters.json")
 
 def save_parameters():
@@ -129,9 +128,12 @@ slider_panel = SliderPanel(
   relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
 slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
-slider_panel.add_slider("max_generations", "int", "Max Generations", (0, 30), click_increment=1)
+slider_panel.add_slider("max_generations_const", "int", "Max Generations", (0, 300), click_increment=1)
+slider_panel.add_slider("max_generations_linear", "float", "Max Generations Linear", (-30, 30), click_increment=1)
+slider_panel.add_slider("max_generations_quadratic", "float", "Max Generations Quadratic", (-3, 3), click_increment=1)
 slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
-# slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
+slider_panel.add_slider("root_segment_len", "int", "Root Segment Length", (0, 100), click_increment=1)
+slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
 # slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
 # slider_panel.add_slider("root_segment_pos_const_y", "int", "Root Segment Pos Const Y", (0, 1080), click_increment=120)
 # slider_panel.add_slider("root_segment_pos_linear_x", "float", "Root Segment Pos Linear X", (-50, 50), click_increment=5)
@@ -173,9 +175,8 @@ while running:
     slider_panel.process_events(event)
     uimanager.process_events(event)
 
-  if prev_max_generations != parameters['max_generations']:
-    root_segments = generate_segments()
-    prev_max_generations = parameters['max_generations']
+  # Regenerate every frame to allow changes to the number of generations.
+  root_segments = generate_segments()
 
   uimanager.update(dt)
 
