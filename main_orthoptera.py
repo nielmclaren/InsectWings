@@ -25,9 +25,8 @@ SLIDER_PANEL_WIDTH = 350
 
 screenshot_index = 0
 
-# TODO: Fullscreen?
-
 parameters:Parameters = Parameters.defaults()
+prev_max_generations = 0
 
 @dataclass
 class Segment:
@@ -41,19 +40,20 @@ def get_args():
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
-def generate_root_segments():
+def generate_segment_and_descendants(segment):
+  if segment.generation < parameters['max_generations'] and len(segment.children) < 1:
+    child_segment = Segment(generation=segment.generation + 1)
+    segment.children.append(child_segment)
+    generate_segment_and_descendants(child_segment)
+
+def generate_segments():
   result = []
   for _ in range(0, parameters['num_root_segments']):
-    segment = Segment()
-    result.append(segment)
-  return result
+    root_segment = Segment()
+    generate_segment_and_descendants(root_segment)
+    result.append(root_segment)
 
-def step_segment_and_descendants(seg):
-  seg.age += 1
-  for child in seg.children:
-    step_segment_and_descendants(child)
-  if seg.generation < parameters['max_generations'] and seg.age > 10 and not seg.children:
-    seg.children.append(Segment(generation=seg.generation + 1))
+  return result
 
 def render_segment_and_descendants(surf, seg, curr_pos, curr_dir, curr_len):
   next_pos = curr_pos + curr_dir * curr_len
@@ -129,6 +129,7 @@ slider_panel = SliderPanel(
   relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
 slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
+slider_panel.add_slider("max_generations", "int", "Max Generations", (0, 30), click_increment=1)
 slider_panel.add_slider("segment_dir_offset", "int", "Segment Direction Offset", (-20, 20), click_increment=1)
 # slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
 # slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
@@ -146,7 +147,7 @@ slider_panel.add_slider("root_segment_dir_quadratic_y", "float", "Root Segment D
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
-root_segments = generate_root_segments()
+root_segments = generate_segments()
 fps_array = []
 animation_steps = 0
 animation_frame_index = 0
@@ -165,20 +166,21 @@ while running:
         save_parameters()
       elif event.key == pygame.K_l:
         load_parameters()
-        root_segments = generate_root_segments()
+        root_segments = generate_segments()
         step = 0
         animation_steps = 0
 
     slider_panel.process_events(event)
     uimanager.process_events(event)
 
+  if prev_max_generations != parameters['max_generations']:
+    root_segments = generate_segments()
+    prev_max_generations = parameters['max_generations']
+
   uimanager.update(dt)
 
   screen.fill("black")
   screen.blit(reference_image, (-200, -300))
-
-  for root_segment in root_segments:
-    step_segment_and_descendants(root_segment)
 
   alpha_surf.fill((0, 0, 0, 0))
   render_root_segments_and_descendants(alpha_surf)
