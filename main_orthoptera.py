@@ -140,6 +140,7 @@ slider_panel = SliderPanel(
   manager=uimanager)
 
 slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
+slider_panel.add_slider("ref_alpha", "int", "Reference Alpha", (0, 255), click_increment=1)
 
 # slider_panel.add_slider("max_generations_const", "int", "Max Generations", (0, 300), click_increment=1)
 # slider_panel.add_slider("max_generations_linear", "float", "Max Generations Linear", (-30, 30), click_increment=1)
@@ -178,6 +179,7 @@ slider_panel.add_slider("segment_dir_d_y", "float", "Segment Dir 'd' Y", (-0.1, 
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
+reference_image_alpha = reference_image.copy()
 root_segments = generate_segments()
 fps_array = []
 animation_steps = 0
@@ -210,7 +212,12 @@ while running:
   uimanager.update(dt)
 
   screen.fill("black")
-  screen.blit(reference_image, (-200, -300))
+
+  # Don't allocate the translucent reference image on every draw. Can allocate when
+  # the reference alpha property changes.
+  reference_image_alpha = reference_image.copy()
+  reference_image_alpha.fill((255, 255, 255, parameters["reference_alpha"]), None, pygame.BLEND_RGBA_MULT)
+  screen.blit(reference_image_alpha, (-200, -300))
 
   alpha_surf.fill((0, 0, 0, 0))
   render_root_segments_and_descendants(alpha_surf)
