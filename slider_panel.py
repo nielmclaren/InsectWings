@@ -111,7 +111,7 @@ class SliderPanel(pygame_gui.elements.UIPanel):
 
   def _format_value(self, param_value: Union[int, float], param_type: str):
     if param_type == 'float':
-      return f"{param_value:.2f}"
+      return f"{param_value:.4f}"
     elif param_type == 'int':
       return f"{param_value}"
     return ""
