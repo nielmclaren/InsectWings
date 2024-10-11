@@ -139,8 +139,8 @@ slider_panel = SliderPanel(
   relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
 
-slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
-slider_panel.add_slider("reference_alpha", "int", "Reference Image Alpha", (0, 255), click_increment=1)
+# slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
+# slider_panel.add_slider("reference_alpha", "int", "Reference Image Alpha", (0, 255), click_increment=1)
 
 # slider_panel.add_slider("max_generations_const", "int", "Max Generations", (0, 300), click_increment=1)
 # slider_panel.add_slider("max_generations_linear", "float", "Max Generations Linear", (-30, 30), click_increment=1)
