@@ -58,11 +58,17 @@ def generate_segments():
 
 def render_segment_and_descendants(surf, index, seg, curr_pos, curr_dir, curr_len):
   next_pos = curr_pos + curr_dir * curr_len
-  next_dir = (param_to_vector2(parameters, 'root_segment_dir_quadratic') * pow(index, 2) + \
+  next_dir = (
+      param_to_vector2(parameters, 'root_segment_dir_quadratic') * pow(index, 2) + \
       param_to_vector2(parameters, 'root_segment_dir_linear') * index + \
       param_to_vector2(parameters, 'root_segment_dir_const') + \
       param_to_vector2(parameters, 'segment_dir_quadratic') * pow(seg.generation, 2) + \
-      param_to_vector2(parameters, 'segment_dir_linear') * seg.generation).normalize()
+      param_to_vector2(parameters, 'segment_dir_linear') * seg.generation + \
+      param_to_vector2(parameters, 'segment_dir_a') * pow(index, 2) * pow(seg.generation, 2) + \
+      param_to_vector2(parameters, 'segment_dir_b') * pow(index, 2) * seg.generation + \
+      param_to_vector2(parameters, 'segment_dir_c') * index * pow(seg.generation, 2) + \
+      param_to_vector2(parameters, 'segment_dir_d') * index * seg.generation
+    ).normalize()
   
   next_len = curr_len * parameters['segment_len_factor']
 
@@ -149,17 +155,26 @@ slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
 # slider_panel.add_slider("root_segment_pos_quadratic_x", "float", "Root Segment Pos Quadratic X", (-5, 5), click_increment=0.5)
 # slider_panel.add_slider("root_segment_pos_quadratic_y", "float", "Root Segment Pos Quadratic Y", (-5, 5), click_increment=0.5)
 
-slider_panel.add_slider("root_segment_dir_const_x", "float", "Root Segment Dir Const X", (-10, 10), click_increment=0.1)
-slider_panel.add_slider("root_segment_dir_const_y", "float", "Root Segment Dir Const Y", (-10, 10), click_increment=0.1)
-slider_panel.add_slider("root_segment_dir_linear_x", "float", "Root Segment Dir Linear X", (-5, 5), click_increment=0.05)
-slider_panel.add_slider("root_segment_dir_linear_y", "float", "Root Segment Dir Linear Y", (-5, 5), click_increment=0.05)
-slider_panel.add_slider("root_segment_dir_quadratic_x", "float", "Root Segment Dir Quadratic X", (-0.5, 0.5), click_increment=0.005)
-slider_panel.add_slider("root_segment_dir_quadratic_y", "float", "Root Segment Dir Quadratic Y", (-0.5, 0.5), click_increment=0.005)
+# slider_panel.add_slider("root_segment_dir_const_x", "float", "Root Segment Dir Const X", (-10, 10), click_increment=0.1)
+# slider_panel.add_slider("root_segment_dir_const_y", "float", "Root Segment Dir Const Y", (-10, 10), click_increment=0.1)
+# slider_panel.add_slider("root_segment_dir_linear_x", "float", "Root Segment Dir Linear X", (-5, 5), click_increment=0.05)
+# slider_panel.add_slider("root_segment_dir_linear_y", "float", "Root Segment Dir Linear Y", (-5, 5), click_increment=0.05)
+# slider_panel.add_slider("root_segment_dir_quadratic_x", "float", "Root Segment Dir Quadratic X", (-0.5, 0.5), click_increment=0.005)
+# slider_panel.add_slider("root_segment_dir_quadratic_y", "float", "Root Segment Dir Quadratic Y", (-0.5, 0.5), click_increment=0.005)
 
 slider_panel.add_slider("segment_dir_linear_x", "float", "Segment Dir Linear X", (-1, 1), click_increment=0.05)
 slider_panel.add_slider("segment_dir_linear_y", "float", "Segment Dir Linear Y", (-1, 1), click_increment=0.05)
 slider_panel.add_slider("segment_dir_quadratic_x", "float", "Segment Dir Quadratic X", (-0.1, 0.1), click_increment=0.001)
 slider_panel.add_slider("segment_dir_quadratic_y", "float", "Segment Dir Quadratic Y", (-0.1, 0.1), click_increment=0.001)
+
+slider_panel.add_slider("segment_dir_a_x", "float", "Segment Dir 'a' X", (-0.01, 0.01), click_increment=0.0001)
+slider_panel.add_slider("segment_dir_a_y", "float", "Segment Dir 'a' Y", (-0.01, 0.01), click_increment=0.0001)
+slider_panel.add_slider("segment_dir_b_x", "float", "Segment Dir 'b' X", (-0.05, 0.05), click_increment=0.0005)
+slider_panel.add_slider("segment_dir_b_y", "float", "Segment Dir 'b' Y", (-0.05, 0.05), click_increment=0.0005)
+slider_panel.add_slider("segment_dir_c_x", "float", "Segment Dir 'c' X", (-0.05, 0.05), click_increment=0.0005)
+slider_panel.add_slider("segment_dir_c_y", "float", "Segment Dir 'c' Y", (-0.05, 0.05), click_increment=0.0005)
+slider_panel.add_slider("segment_dir_d_x", "float", "Segment Dir 'd' X", (-0.1, 0.1), click_increment=0.001)
+slider_panel.add_slider("segment_dir_d_y", "float", "Segment Dir 'd' Y", (-0.1, 0.1), click_increment=0.001)
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)

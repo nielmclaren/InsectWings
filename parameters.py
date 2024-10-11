@@ -21,6 +21,14 @@ class Parameters(TypedDict):
   segment_dir_linear_y: float
   segment_dir_quadratic_x: float
   segment_dir_quadratic_y: float
+  segment_dir_a_x: float
+  segment_dir_a_y: float
+  segment_dir_b_x: float
+  segment_dir_b_y: float
+  segment_dir_c_x: float
+  segment_dir_c_y: float
+  segment_dir_d_x: float
+  segment_dir_d_y: float
   segment_len_factor: float
   max_generations_const: int
   max_generations_linear: float
@@ -48,6 +56,14 @@ class Parameters(TypedDict):
       segment_dir_linear_y=0,
       segment_dir_quadratic_x=0,
       segment_dir_quadratic_y=0,
+      segment_dir_a_x=0,
+      segment_dir_a_y=0,
+      segment_dir_b_x=0,
+      segment_dir_b_y=0,
+      segment_dir_c_x=0,
+      segment_dir_c_y=0,
+      segment_dir_d_x=0,
+      segment_dir_d_y=0,
       segment_len_factor=0.95,
       max_generations_const=12,
       max_generations_linear=0.0,
