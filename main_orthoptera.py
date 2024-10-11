@@ -140,7 +140,7 @@ slider_panel = SliderPanel(
   manager=uimanager)
 
 slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
-slider_panel.add_slider("ref_alpha", "int", "Reference Alpha", (0, 255), click_increment=1)
+slider_panel.add_slider("reference_alpha", "int", "Reference Image Alpha", (0, 255), click_increment=1)
 
 # slider_panel.add_slider("max_generations_const", "int", "Max Generations", (0, 300), click_increment=1)
 # slider_panel.add_slider("max_generations_linear", "float", "Max Generations Linear", (-30, 30), click_increment=1)
