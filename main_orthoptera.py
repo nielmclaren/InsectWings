@@ -10,6 +10,7 @@ from parameters import Parameters
 import pygame
 import pygame.freetype
 import pygame_gui
+import random
 from slider_panel import SliderPanel
 from subdict import subdict
 
@@ -23,6 +24,10 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
+step = 0
+animation_steps = 0
+animation_frame_index = 0
+root_segments = []
 screenshot_index = 0
 
 parameters:Parameters = Parameters.defaults()
@@ -101,17 +106,37 @@ def render_hud(surf, step, fps):
   text = f"FPS: {fps}"
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
+def parameters_changed():
+  global root_segments, step, animation_steps
+  root_segments = generate_segments()
+  step = 0
+  animation_steps = 0
+  slider_panel.set_parameters(parameters)
+
 def load_parameters():
   global parameters, slider_panel
   with open('parameters.json', 'r') as f:
     parameters = json.load(f)
-    slider_panel.set_parameters(parameters)
+    parameters_changed()
   print("Loaded parameters.json")
 
 def save_parameters():
   with open('parameters.json', 'w') as f:
     json.dump(parameters, f, indent=2)
   print("Saved parameters.json")
+
+def randomize_parameters():
+  global parameters
+  parameters['segment_dir_a_x'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_a_y'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_b_x'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_b_y'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_c_x'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_c_y'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_d_x'] = random.uniform(-0.3, 0.3)
+  parameters['segment_dir_d_y'] = random.uniform(-0.3, 0.3)
+
+  parameters_changed()
 
 def save_screenshot(surf, index):
   filename = f"output/orthoptera_{str(index).zfill(3)}.png"
@@ -130,7 +155,6 @@ alpha_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
-step = 0
 dt = 0
 
 uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
@@ -180,10 +204,9 @@ slider_panel.add_slider("segment_dir_d_y", "float", "Segment Dir 'd' Y", (-0.1, 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
 reference_image_alpha = reference_image.copy()
-root_segments = generate_segments()
 fps_array = []
-animation_steps = 0
-animation_frame_index = 0
+
+parameters_changed()
 
 while running:
   for event in pygame.event.get():
@@ -199,9 +222,10 @@ while running:
         save_parameters()
       elif event.key == pygame.K_l:
         load_parameters()
-        root_segments = generate_segments()
-        step = 0
-        animation_steps = 0
+        parameters_changed()
+      elif event.key == pygame.K_q:
+        randomize_parameters()
+        parameters_changed()
 
     slider_panel.process_events(event)
     uimanager.process_events(event)
