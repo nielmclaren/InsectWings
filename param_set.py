@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-class Parameters(TypedDict):
+class ParamSet(TypedDict):
   alpha: int
   reference_alpha: int
   num_root_segments: int
@@ -36,7 +36,7 @@ class Parameters(TypedDict):
   max_generations_quadratic: float
 
   def defaults():
-    return Parameters(
+    return ParamSet(
       alpha=96,
       reference_alpha=192,
       num_root_segments=12,

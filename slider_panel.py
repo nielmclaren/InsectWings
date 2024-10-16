@@ -8,7 +8,7 @@ from pygame_gui.core import UIElement
 from pygame_gui.core.gui_type_hints import RectLike
 from typing import Union, Dict, Optional
 
-from parameters import Parameters
+from param_set import ParamSet
 
 MARGIN = 4
 ADJUSTMENT = 5
@@ -27,7 +27,7 @@ class Entry:
 class SliderPanel(pygame_gui.elements.UIPanel):
   def __init__(
       self, 
-      parameters: Parameters,
+      parameters: ParamSet,
       relative_rect: RectLike,
       manager: Optional[IUIManagerInterface] = None,
       *,
@@ -47,7 +47,7 @@ class SliderPanel(pygame_gui.elements.UIPanel):
       parent_element=parent_element,
       object_id=object_id,
       element_id=element_id)
-    self._parameters: Parameters = parameters
+    self._parameters: ParamSet = parameters
     self._param_name_to_entry: Dict[str, Entry] = {}
     self._ui_element_to_entry: Dict[UIElement, Entry] = {}
     self._curr_y = MARGIN

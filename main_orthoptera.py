@@ -6,7 +6,7 @@ import json
 from math import floor
 import numpy as np
 import pygame_gui.elements.ui_panel
-from parameters import Parameters
+from param_set import ParamSet
 import pygame
 import pygame.freetype
 import pygame_gui
@@ -30,7 +30,7 @@ animation_frame_index = 0
 root_segments = []
 screenshot_index = 0
 
-parameters:Parameters = Parameters.defaults()
+parameters:ParamSet = ParamSet.defaults()
 
 @dataclass
 class Segment:
