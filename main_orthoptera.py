@@ -130,17 +130,25 @@ def save_parameters():
     json.dump(parameters, f, indent=2)
   print("Saved parameters.json")
 
+def randomize_parameter(name:str):
+  global param_defs, parameters
+  param_def = param_defs[name]
+  parameters[name] = random.uniform(param_def.range[0], param_def.range[1])
+
 def randomize_parameters():
   global parameters
-  parameters['segment_dir_a_x'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_a_y'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_b_x'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_b_y'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_c_x'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_c_y'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_d_x'] = random.uniform(-0.3, 0.3)
-  parameters['segment_dir_d_y'] = random.uniform(-0.3, 0.3)
-
+  param_names = [
+    "segment_dir_a_x",
+    "segment_dir_a_y",
+    "segment_dir_b_x",
+    "segment_dir_b_y",
+    "segment_dir_c_x",
+    "segment_dir_c_y",
+    "segment_dir_d_x",
+    "segment_dir_d_y"
+  ]
+  for name in param_names:
+    randomize_parameter(name)
   parameters_changed()
 
 def save_screenshot(surf, index):
