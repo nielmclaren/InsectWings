@@ -6,13 +6,17 @@ import json
 from math import floor
 import numpy as np
 import pygame_gui.elements.ui_panel
-from param_set import ParamSet
 import pygame
 import pygame.freetype
 import pygame_gui
 import random
-from slider_panel import SliderPanel
 from subdict import subdict
+from typing import Dict
+
+from get_param_defs import get_param_defs
+from param_def import ParamDef
+from param_set import ParamSet
+from slider_panel import SliderPanel
 
 pygame.init()
 pygame.freetype.init()
@@ -30,6 +34,7 @@ animation_frame_index = 0
 root_segments = []
 screenshot_index = 0
 
+param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
 
 @dataclass
@@ -163,43 +168,47 @@ slider_panel = SliderPanel(
   relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
   manager=uimanager)
 
-# slider_panel.add_slider("alpha", "int", "Alpha", (0, 255), click_increment=1)
-# slider_panel.add_slider("reference_alpha", "int", "Reference Image Alpha", (0, 255), click_increment=1)
+slider_param_names = [
+  "alpha",
+  "reference_alpha",
 
-# slider_panel.add_slider("max_generations_const", "int", "Max Generations", (0, 300), click_increment=1)
-# slider_panel.add_slider("max_generations_linear", "float", "Max Generations Linear", (-30, 30), click_increment=1)
-# slider_panel.add_slider("max_generations_quadratic", "float", "Max Generations Quadratic", (-3, 3), click_increment=1)
+  # "max_generations_const",
+  # "max_generations_linear",
+  # "max_generations_quadratic",
 
-# slider_panel.add_slider("root_segment_len", "int", "Root Segment Length", (0, 100), click_increment=1)
-# slider_panel.add_slider("segment_len_factor", "float", "Segment Length Factor", (0.2, 1.2), click_increment=0.05)
+  # "root_segment_len",
+  # "segment_len_factor",
 
-# slider_panel.add_slider("root_segment_pos_const_x", "int", "Root Segment Pos Const X", (0, 1920), click_increment=120)
-# slider_panel.add_slider("root_segment_pos_const_y", "int", "Root Segment Pos Const Y", (0, 1080), click_increment=120)
-# slider_panel.add_slider("root_segment_pos_linear_x", "float", "Root Segment Pos Linear X", (-50, 50), click_increment=5)
-# slider_panel.add_slider("root_segment_pos_linear_y", "float", "Root Segment Pos Linear Y", (-50, 50), click_increment=5)
-# slider_panel.add_slider("root_segment_pos_quadratic_x", "float", "Root Segment Pos Quadratic X", (-5, 5), click_increment=0.5)
-# slider_panel.add_slider("root_segment_pos_quadratic_y", "float", "Root Segment Pos Quadratic Y", (-5, 5), click_increment=0.5)
+  # "root_segment_pos_const_x",
+  # "root_segment_pos_const_y",
+  # "root_segment_pos_linear_x",
+  # "root_segment_pos_linear_y",
+  # "root_segment_pos_quadratic_x",
+  # "root_segment_pos_quadratic_y",
 
-# slider_panel.add_slider("root_segment_dir_const_x", "float", "Root Segment Dir Const X", (-10, 10), click_increment=0.1)
-# slider_panel.add_slider("root_segment_dir_const_y", "float", "Root Segment Dir Const Y", (-10, 10), click_increment=0.1)
-# slider_panel.add_slider("root_segment_dir_linear_x", "float", "Root Segment Dir Linear X", (-5, 5), click_increment=0.05)
-# slider_panel.add_slider("root_segment_dir_linear_y", "float", "Root Segment Dir Linear Y", (-5, 5), click_increment=0.05)
-# slider_panel.add_slider("root_segment_dir_quadratic_x", "float", "Root Segment Dir Quadratic X", (-0.5, 0.5), click_increment=0.005)
-# slider_panel.add_slider("root_segment_dir_quadratic_y", "float", "Root Segment Dir Quadratic Y", (-0.5, 0.5), click_increment=0.005)
+  # "root_segment_dir_const_x",
+  # "root_segment_dir_const_y",
+  # "root_segment_dir_linear_x",
+  # "root_segment_dir_linear_y",
+  # "root_segment_dir_quadratic_x",
+  # "root_segment_dir_quadratic_y",
 
-slider_panel.add_slider("segment_dir_linear_x", "float", "Segment Dir Linear X", (-1, 1), click_increment=0.05)
-slider_panel.add_slider("segment_dir_linear_y", "float", "Segment Dir Linear Y", (-1, 1), click_increment=0.05)
-slider_panel.add_slider("segment_dir_quadratic_x", "float", "Segment Dir Quadratic X", (-0.1, 0.1), click_increment=0.001)
-slider_panel.add_slider("segment_dir_quadratic_y", "float", "Segment Dir Quadratic Y", (-0.1, 0.1), click_increment=0.001)
+  "segment_dir_linear_x",
+  "segment_dir_linear_y",
+  "segment_dir_quadratic_x",
+  "segment_dir_quadratic_y",
 
-slider_panel.add_slider("segment_dir_a_x", "float", "Segment Dir 'a' X", (-0.01, 0.01), click_increment=0.0001)
-slider_panel.add_slider("segment_dir_a_y", "float", "Segment Dir 'a' Y", (-0.01, 0.01), click_increment=0.0001)
-slider_panel.add_slider("segment_dir_b_x", "float", "Segment Dir 'b' X", (-0.05, 0.05), click_increment=0.0005)
-slider_panel.add_slider("segment_dir_b_y", "float", "Segment Dir 'b' Y", (-0.05, 0.05), click_increment=0.0005)
-slider_panel.add_slider("segment_dir_c_x", "float", "Segment Dir 'c' X", (-0.05, 0.05), click_increment=0.0005)
-slider_panel.add_slider("segment_dir_c_y", "float", "Segment Dir 'c' Y", (-0.05, 0.05), click_increment=0.0005)
-slider_panel.add_slider("segment_dir_d_x", "float", "Segment Dir 'd' X", (-0.1, 0.1), click_increment=0.001)
-slider_panel.add_slider("segment_dir_d_y", "float", "Segment Dir 'd' Y", (-0.1, 0.1), click_increment=0.001)
+  "segment_dir_a_x",
+  "segment_dir_a_y",
+  "segment_dir_b_x",
+  "segment_dir_b_y",
+  "segment_dir_c_x",
+  "segment_dir_c_y",
+  "segment_dir_d_x",
+  "segment_dir_d_y",
+]
+for name in slider_param_names:
+  slider_panel.add_slider(param_defs[name])
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)

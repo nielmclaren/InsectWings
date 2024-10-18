@@ -8,6 +8,7 @@ from pygame_gui.core import UIElement
 from pygame_gui.core.gui_type_hints import RectLike
 from typing import Union, Dict, Optional
 
+from param_def import ParamDef
 from param_set import ParamSet
 
 MARGIN = 4
@@ -52,24 +53,24 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     self._ui_element_to_entry: Dict[UIElement, Entry] = {}
     self._curr_y = MARGIN
   
-  def set_parameters(self, params):
+  def set_parameters(self, params:ParamSet):
     self._parameters = params
     for _, entry in self._param_name_to_entry.items():
       value = self._parameters[entry.param_name]
       entry.slider.set_current_value(value)
       entry.value_textbox.set_text(self._format_value(value, entry.param_type))
   
-  def add_slider(self, param_name, param_type, label, value_range, click_increment):
-    value = self._parameters[param_name]
+  def add_slider(self, param_def:ParamDef):
+    value = self._parameters[param_def.name]
     # UI Horizontal Slider uses the datatype of start_value to determine type so
     # ensure it matches the specified type.
-    if param_type == 'int':
+    if param_def.type == 'int':
       value = int(value)
-    elif param_type == 'float':
+    elif param_def.type == 'float':
       value = float(value)
 
     label_textbox = pygame_gui.elements.ui_text_box.UITextBox(
-      label,
+      param_def.name,
       container=self,
       relative_rect=pygame.Rect((MARGIN, self._curr_y), (self.relative_rect.width - MARGIN * 2 - 1, LABEL_HEIGHT)),
       #anchors={'left': 'left', 'right': 'right'},
@@ -80,10 +81,10 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     slider = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
       container=self,
       relative_rect=pygame.Rect((MARGIN, self._curr_y + LABEL_HEIGHT - ADJUSTMENT), (self.relative_rect.width - MARGIN * 2 - VALUE_WIDTH + ADJUSTMENT, SLIDER_HEIGHT)),
-      start_value=value, value_range=value_range, click_increment=click_increment,
+      start_value=value, value_range=param_def.range, click_increment=param_def.step,
       manager=self.ui_manager)
     value_textbox = pygame_gui.elements.ui_text_box.UITextBox(
-      self._format_value(value, param_type),
+      self._format_value(value, param_def.type),
       container=self,
       relative_rect=pygame.Rect((self.relative_rect.width - MARGIN - VALUE_WIDTH - 1, self._curr_y + LABEL_HEIGHT - ADJUSTMENT), (VALUE_WIDTH, SLIDER_HEIGHT)),
       manager=self.ui_manager,
@@ -92,12 +93,12 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     )
 
     entry = Entry(
-      param_name=param_name,
-      param_type=param_type,
+      param_name=param_def.name,
+      param_type=param_def.type,
       slider=slider,
       label_textbox=label_textbox,
       value_textbox=value_textbox)
-    self._param_name_to_entry[param_name] = entry
+    self._param_name_to_entry[param_def.name] = entry
     self._ui_element_to_entry[slider] = entry
     self._curr_y += LABEL_HEIGHT + SLIDER_HEIGHT - ADJUSTMENT
 
