@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import pygame
 
 from param_set import ParamSet
-from param_helpers import param_to_vector2
+from param_helpers import quadratic_param_to_vector2, param_to_vector2
 from subdict import subdict
 
 @dataclass
@@ -17,7 +17,7 @@ class Segment:
 
 class PrimaryVeins:
   def __init__(self, parameters:ParamSet):
-    self._parameters = parameters
+    self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
   
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
@@ -52,29 +52,23 @@ class PrimaryVeins:
     result = []
 
     p = subdict(parameters, 'root_segment')
-    length = p['len']
 
     for index in range(0, parameters['num_root_segments']):
-      position = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + \
-        param_to_vector2(p, 'pos_linear') * index + \
-        param_to_vector2(p, 'pos_const')
-      direction = (param_to_vector2(p, 'dir_quadratic') * pow(index, 2) + \
-        param_to_vector2(p, 'dir_linear') * index + \
-        param_to_vector2(p, 'dir_const')).normalize()
-
-      root_segment = Segment(position=position, direction=direction, length=length)
+      root_segment = Segment(
+        position=quadratic_param_to_vector2(subdict(p, 'pos'), index),
+        direction=quadratic_param_to_vector2(subdict(p, 'dir'), index).normalize(),
+        length=p['len'])
       self._generate_segment_and_descendants(parameters, index, root_segment)
       result.append(root_segment)
 
     return result
 
-  def _render_segment_and_descendants(self, parameters, surf, index, seg):
-    color = pygame.Color(255, 255, 255, parameters['alpha'])
+  def _render_segment_and_descendants(self, surf, index, seg):
+    color = pygame.Color(255, 255, 255, self._alpha)
     pygame.draw.line(surf, color, seg.position, seg.position + seg.direction * seg.length, 2)
     for child_segment in seg.children:
-      self._render_segment_and_descendants(parameters, surf, index, child_segment)
+      self._render_segment_and_descendants(surf, index, child_segment)
 
   def render_to(self, surf):
-    p = subdict(self._parameters, 'root_segment')
     for index, root_segment in enumerate(self._root_segments):
-      self._render_segment_and_descendants(self._parameters, surf, index, root_segment)
+      self._render_segment_and_descendants(surf, index, root_segment)
