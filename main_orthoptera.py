@@ -188,7 +188,7 @@ while running:
     uimanager.process_events(event)
 
   # Regenerate every frame to allow changes to the number of generations.
-  #primary_veins = PrimaryVeins(parameters)
+  primary_veins = PrimaryVeins(parameters)
 
   uimanager.update(dt)
 

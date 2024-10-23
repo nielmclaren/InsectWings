@@ -38,7 +38,6 @@ class PrimaryVeins:
   def _generate_segment_and_descendants(self, parameters:ParamSet, index:int, parent_segment:Segment):
     p = subdict(parameters, 'max_generations')
     max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
-    max_generations = 4
 
     if parent_segment.generation < max_generations:
       generation = parent_segment.generation + 1
@@ -57,7 +56,7 @@ class PrimaryVeins:
 
     p = subdict(parameters, 'root_segment')
 
-    for index in range(0, 3): #parameters['num_root_segments']):
+    for index in range(0, parameters['num_root_segments']):
       root_segment = Segment(
         position=quadratic_param_to_vector2(subdict(p, 'pos'), index),
         direction=quadratic_param_to_vector2(subdict(p, 'dir'), index).normalize(),
@@ -69,20 +68,9 @@ class PrimaryVeins:
     return result
 
   def _detect_collision_segments(self, seg0:Segment, seg1:Segment):
-    print(f"{seg0.index}-{seg0.generation}", f"{seg1.index}-{seg1.generation}")
     return False
 
   def _detect_collision(self, frontier:list[Segment], accumulator:list[Segment]=[]):
-    print("Detect collisions... go!")
-    print("Frontier: ", end="")
-    for f in frontier:
-      print(f"{f.index}-{f.generation}, ", end="")
-    print("")
-    print("Accumulator: ", end="")
-    for f in accumulator:
-      print(f"{f.index}-{f.generation}, ", end="")
-    print("")
-
     # Breadth-first search will find collisions sooner.
     next_frontier = []
     for frontier_segment in frontier:
@@ -97,8 +85,6 @@ class PrimaryVeins:
       return self._detect_collision(next_frontier, accumulator)
     return False
         
-
-
   def _render_segment_and_descendants(self, surf, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
     pygame.draw.line(surf, color, seg.position, seg.position + seg.direction * seg.length, 2)
