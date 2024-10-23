@@ -1,7 +1,6 @@
 #!./venv/bin/python3
 
 import argparse
-from dataclasses import dataclass, field
 import json
 from math import floor
 import numpy as np
@@ -16,6 +15,7 @@ from typing import Dict
 from get_param_defs import get_param_defs
 from param_def import ParamDef
 from param_set import ParamSet
+from primary_veins import PrimaryVeins
 from slider_panel import SliderPanel
 
 pygame.init()
@@ -31,76 +31,16 @@ SLIDER_PANEL_WIDTH = 350
 step = 0
 animation_steps = 0
 animation_frame_index = 0
-root_segments = []
 screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
-
-@dataclass
-class Segment:
-  age: int = 0
-  generation: int = 0
-  # TODO: How to specify list[Segment] when Segment is not yet defined?
-  children: list['Segment'] = field(default_factory=lambda: [])
+primary_veins:PrimaryVeins
 
 def get_args():
   parser = argparse.ArgumentParser("./main_orthoptera.py")
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
-
-def generate_segment_and_descendants(index, segment):
-  p = subdict(parameters, 'max_generations')
-  max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
-  if segment.generation < max_generations and len(segment.children) < 1:
-    child_segment = Segment(generation=segment.generation + 1)
-    segment.children.append(child_segment)
-    generate_segment_and_descendants(index, child_segment)
-
-def generate_segments():
-  result = []
-  for index in range(0, parameters['num_root_segments']):
-    root_segment = Segment()
-    generate_segment_and_descendants(index, root_segment)
-    result.append(root_segment)
-
-  return result
-
-def render_segment_and_descendants(surf, index, seg, curr_pos, curr_dir, curr_len):
-  next_pos = curr_pos + curr_dir * curr_len
-  next_dir = (
-      param_to_vector2(parameters, 'root_segment_dir_quadratic') * pow(index, 2) + \
-      param_to_vector2(parameters, 'root_segment_dir_linear') * index + \
-      param_to_vector2(parameters, 'root_segment_dir_const') + \
-      param_to_vector2(parameters, 'segment_dir_quadratic') * pow(seg.generation, 2) + \
-      param_to_vector2(parameters, 'segment_dir_linear') * seg.generation + \
-      param_to_vector2(parameters, 'segment_dir_a') * pow(index, 2) * pow(seg.generation, 2) + \
-      param_to_vector2(parameters, 'segment_dir_b') * pow(index, 2) * seg.generation + \
-      param_to_vector2(parameters, 'segment_dir_c') * index * pow(seg.generation, 2) + \
-      param_to_vector2(parameters, 'segment_dir_d') * index * seg.generation
-    ).normalize()
-  
-  next_len = curr_len * parameters['segment_len_factor']
-
-  color = pygame.Color(255, 255, 255, parameters['alpha'])
-  pygame.draw.line(surf, color, curr_pos, next_pos, 2)
-  for child in seg.children:
-    render_segment_and_descendants(surf, index, child, next_pos, next_dir, next_len)
-
-def param_to_vector2(parameters, prefix):
-  return pygame.Vector2(parameters[f"{prefix}_x"], parameters[f"{prefix}_y"])
-
-def render_root_segments_and_descendants(surf):
-  p = subdict(parameters, 'root_segment')
-  length = p['len']
-  for index, root_segment in enumerate(root_segments):
-    pos = param_to_vector2(p, 'pos_quadratic') * pow(index, 2) + \
-      param_to_vector2(p, 'pos_linear') * index + \
-      param_to_vector2(p, 'pos_const')
-    dir = (param_to_vector2(p, 'dir_quadratic') * pow(index, 2) + \
-      param_to_vector2(p, 'dir_linear') * index + \
-      param_to_vector2(p, 'dir_const')).normalize()
-    render_segment_and_descendants(surf, index, root_segment, pos, dir, length)
 
 def render_hud(surf, step, fps):
   text_color = (255, 255, 255)
@@ -112,8 +52,8 @@ def render_hud(surf, step, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed():
-  global root_segments, step, animation_steps
-  root_segments = generate_segments()
+  global primary_veins, step, animation_steps
+  primary_veins = PrimaryVeins(parameters)
   step = 0
   animation_steps = 0
   slider_panel.set_parameters(parameters)
@@ -248,7 +188,7 @@ while running:
     uimanager.process_events(event)
 
   # Regenerate every frame to allow changes to the number of generations.
-  root_segments = generate_segments()
+  primary_veins = PrimaryVeins(parameters)
 
   uimanager.update(dt)
 
@@ -261,7 +201,7 @@ while running:
   screen.blit(reference_image_alpha, (-200, -300))
 
   alpha_surf.fill((0, 0, 0, 0))
-  render_root_segments_and_descendants(alpha_surf)
+  primary_veins.render_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
