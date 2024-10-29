@@ -20,7 +20,10 @@ class PrimaryVeins:
   def __init__(self, parameters:ParamSet):
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
-    self._has_collision = self._detect_collision(self._root_segments)
+    self._first_intersection = self._detect_collision(self._root_segments)
+
+  def has_collision(self):
+    return self._first_intersection != False
   
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
     return (
@@ -67,16 +70,41 @@ class PrimaryVeins:
 
     return result
 
-  def _detect_collision_segments(self, seg0:Segment, seg1:Segment):
+  def _intersection(self, seg0:Segment, seg1:Segment):
+    p0:pygame.Vector2 = seg0.position
+    p2:pygame.Vector2 = seg1.position
+    s1:pygame.Vector2 = seg0.direction * seg0.length
+    s2:pygame.Vector2 = seg1.direction * seg1.length
+
+    denominator:float = -s2.x * s1.y + s1.x * s2.y
+    # TODO: Handle the case where the denominator is zero.
+    if denominator == 0:
+      return False
+
+    s:float = (-s1.y * (p0.x - p2.x) + s1.x * (p0.y - p2.y)) / denominator
+    t:float = ( s2.x * (p0.y - p2.y) - s2.y * (p0.x - p2.x)) / denominator
+
+    #if s >= 0 and s <= 1 and t >= 0 and t <= 1:
+    if s > 0 and s < 1 and t > 0 and t < 1:
+      return pygame.Vector2(p0.x + t * s1.x, p0.y + t * s1.y)
+
     return False
 
-  def _detect_collision(self, frontier:list[Segment], accumulator:list[Segment]=[]):
+  def _detect_collision(self, frontier:list[Segment], accumulator=False):
+    if not accumulator:
+      accumulator = []
+
     # Breadth-first search will find collisions sooner.
     next_frontier = []
     for frontier_segment in frontier:
       for segment in accumulator:
-        if self._detect_collision_segments(frontier_segment, segment):
-          return True
+        if frontier_segment.index == segment.index and abs(frontier_segment.generation - segment.generation) < 2:
+          # Ignore adjacent segments.
+          continue
+
+        x = self._intersection(frontier_segment, segment)
+        if x:
+          return x
       accumulator.append(frontier_segment)
       for child_segment in frontier_segment.children:
         next_frontier.append(child_segment)
@@ -94,3 +122,6 @@ class PrimaryVeins:
   def render_to(self, surf):
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
+    if self._first_intersection:
+      color = pygame.Color(255, 255, 255, self._alpha)
+      pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)

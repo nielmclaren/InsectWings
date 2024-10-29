@@ -42,10 +42,12 @@ def get_args():
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
-def render_hud(surf, step, fps):
+def render_hud(surf, step, has_collision, fps):
   text_color = (255, 255, 255)
   hud_pos = [10, 10]
   HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
+  hud_pos[1] += 18
+  HUD_FONT.render_to(surf, hud_pos, f"Collision: {'YES!' if has_collision else 'nope'}", text_color)
 
   hud_pos = [10, SCREEN_WIDTH - 10]
   text = f"FPS: {fps}"
@@ -188,7 +190,7 @@ while running:
     uimanager.process_events(event)
 
   # Regenerate every frame to allow changes to the number of generations.
-  primary_veins = PrimaryVeins(parameters)
+  #primary_veins = PrimaryVeins(parameters)
 
   uimanager.update(dt)
 
@@ -204,7 +206,8 @@ while running:
   primary_veins.render_to(alpha_surf)
   screen.blit(alpha_surf)
 
-  render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
+  has_collision = primary_veins.has_collision()
+  render_hud(screen, step, has_collision, floor(np.average(fps_array)) if len(fps_array) else 0)
   
   uimanager.draw_ui(screen)
 
