@@ -78,6 +78,10 @@ def randomize_parameter(name:str):
 def randomize_parameters():
   global parameters
   param_names = [
+    "segment_dir_linear_x",
+    "segment_dir_linear_y",
+    "segment_dir_quadratic_x",
+    "segment_dir_quadratic_y",
     "segment_dir_a_x",
     "segment_dir_a_y",
     "segment_dir_b_x",

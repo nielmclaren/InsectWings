@@ -38,7 +38,8 @@ class PrimaryVeins:
         param_to_vector2(parameters, 'segment_dir_d') * index * generation
       ).normalize()
 
-  def _generate_segment_and_descendants(self, parameters:ParamSet, index:int, parent_segment:Segment):
+  def _generate_segment_and_descendants(self, parameters:ParamSet, parent_segment:Segment):
+    index = parent_segment.index
     p = subdict(parameters, 'max_generations')
     max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
 
@@ -52,20 +53,21 @@ class PrimaryVeins:
         generation=generation
       )
       parent_segment.children.append(child_segment)
-      self._generate_segment_and_descendants(parameters, index, child_segment)
+      self._generate_segment_and_descendants(parameters, child_segment)
 
   def _generate_segments(self, parameters:ParamSet):
     result = []
 
     p = subdict(parameters, 'root_segment')
 
-    for index in range(0, parameters['num_root_segments']):
+    for zero_index in range(0, parameters['num_root_segments']):
+      one_index = zero_index + 1
       root_segment = Segment(
-        position=quadratic_param_to_vector2(subdict(p, 'pos'), index),
-        direction=quadratic_param_to_vector2(subdict(p, 'dir'), index).normalize(),
+        position=quadratic_param_to_vector2(subdict(p, 'pos'), one_index),
+        direction=quadratic_param_to_vector2(subdict(p, 'dir'), one_index).normalize(),
         length=p['len'],
-        index=index)
-      self._generate_segment_and_descendants(parameters, index, root_segment)
+        index=one_index)
+      self._generate_segment_and_descendants(parameters, root_segment)
       result.append(root_segment)
 
     return result
