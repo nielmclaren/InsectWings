@@ -42,12 +42,10 @@ def get_args():
   parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
   return parser.parse_args()
 
-def render_hud(surf, step, has_collision, fps):
+def render_hud(surf, step, fps):
   text_color = (255, 255, 255)
   hud_pos = [10, 10]
   HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
-  hud_pos[1] += 18
-  HUD_FONT.render_to(surf, hud_pos, f"Collision: {'YES!' if has_collision else 'nope'}", text_color)
 
   hud_pos = [10, SCREEN_WIDTH - 10]
   text = f"FPS: {fps}"
@@ -89,8 +87,12 @@ def randomize_parameters():
     "segment_dir_d_x",
     "segment_dir_d_y"
   ]
-  for name in param_names:
-    randomize_parameter(name)
+  while True:
+    for name in param_names:
+      randomize_parameter(name)
+    primary_veins = PrimaryVeins(parameters)
+    if not primary_veins.has_collision():
+      break
   parameters_changed()
 
 def save_screenshot(surf, index):
@@ -206,8 +208,7 @@ while running:
   primary_veins.render_to(alpha_surf)
   screen.blit(alpha_surf)
 
-  has_collision = primary_veins.has_collision()
-  render_hud(screen, step, has_collision, floor(np.average(fps_array)) if len(fps_array) else 0)
+  render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
   
   uimanager.draw_ui(screen)
 
