@@ -29,6 +29,7 @@ SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
 step = 0
+export_index = 0
 animation_steps = 0
 animation_frame_index = 0
 screenshot_index = 0
@@ -99,15 +100,23 @@ def randomize_parameters():
       break
   parameters_changed()
 
+def export_wing(surf, index):
+  filename = f"output/wing_{str(index).zfill(3)}.png"
+  bounds = surf.get_bounding_rect()
+  cropped = surf.subsurface(bounds)
+
+  pygame.image.save(cropped, f"{filename}")
+  print(f"Saved wing {filename}")
+
 def save_screenshot(surf, index):
   filename = f"output/orthoptera_{str(index).zfill(3)}.png"
   pygame.image.save(surf, f"{filename}")
-  print(f"Saved {filename}")
+  print(f"Saved screenshot {filename}")
 
 def save_animation_frame(surf, frame_index):
   filename = f"output/frame_{str(frame_index).zfill(4)}.png"
   pygame.image.save(surf, f"{filename}")
-  print(f"Saved {filename}")
+  print(f"Saved frame {filename}")
 
 args = get_args()
 
@@ -180,6 +189,9 @@ while running:
     elif event.type == pygame.KEYDOWN:
       if event.key == pygame.K_ESCAPE:
         running = False
+      elif event.key == pygame.K_x:
+        export_wing(alpha_surf, export_index)
+        export_index += 1
       elif event.key == pygame.K_r:
         save_screenshot(screen, screenshot_index)
         screenshot_index += 1
