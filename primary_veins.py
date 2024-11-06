@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from math import floor
 import pygame
 
 from param_set import ParamSet
@@ -20,7 +21,9 @@ class PrimaryVeins:
   def __init__(self, parameters:ParamSet):
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
+    self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
+    self._centrish = self._get_centrish(parameters, self._root_segments)
 
   def has_collision(self):
     return self._first_intersection != False
@@ -72,6 +75,14 @@ class PrimaryVeins:
 
     return result
 
+  def _get_tip_segments(self, root_segments:list[Segment]):
+    result = []
+    for segment in root_segments:
+      while len(segment.children) > 0:
+        segment = segment.children[0]
+      result.append(segment)
+    return result
+
   def _intersection(self, seg0:Segment, seg1:Segment):
     p0:pygame.Vector2 = seg0.position
     p2:pygame.Vector2 = seg1.position
@@ -114,16 +125,77 @@ class PrimaryVeins:
     if len(next_frontier) > 0:
       return self._detect_collision(next_frontier, accumulator)
     return False
+  
+  def _get_centrish(self, parameters:ParamSet, root_segments:list[Segment]):
+    index = floor(len(self._root_segments) / 2) - 1
+    seg = self._root_segments[index]
+    p = subdict(parameters, 'max_generations')
+    max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
+    half_generation = floor(max_generations / 2)
+
+    while seg.generation < half_generation:
+      seg = seg.children[0]
+
+    return seg.position
         
   def _render_segment_and_descendants(self, surf, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
-    pygame.draw.line(surf, color, seg.position, seg.position + seg.direction * seg.length, 2)
+    pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 2)
     for child_segment in seg.children:
       self._render_segment_and_descendants(surf, index, child_segment)
 
   def render_to(self, surf):
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
+
     if self._first_intersection:
       color = pygame.Color(255, 255, 255, self._alpha)
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
+
+  def render_perimeter_to(self, surf):
+    index = 0
+    self._render_segment_and_descendants(surf, index, self._root_segments[index])
+    index = len(self._root_segments) - 1
+    self._render_segment_and_descendants(surf, index, self._root_segments[index])
+    
+    prev_segment = False
+    for segment in self._root_segments:
+      color = pygame.Color(255, 255, 255, self._alpha)
+      if prev_segment:
+        pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
+      prev_segment = segment
+
+    prev_segment = False
+    for segment in self._tip_segments:
+      color = pygame.Color(255, 255, 255, self._alpha)
+      if prev_segment:
+        pygame.draw.line(surf, color,
+          self._get_endpoint(prev_segment),
+          self._get_endpoint(segment), 2)
+      prev_segment = segment
+    
+    # TODO: Oh, I can do [-1] right?
+    corners = [
+      self._root_segments[0].position,
+      self._get_endpoint(self._tip_segments[0]),
+      self._root_segments[-1].position,
+      self._get_endpoint(self._tip_segments[-1])
+    ]
+
+    for pos in corners:
+      color = pygame.Color(255, 255, 255, self._alpha)
+      pygame.draw.circle(surf, color, pos, 10, width=3)
+
+    centrish = pygame.Vector2()
+    for pos in corners:
+      centrish += pos
+    centrish /= len(corners)
+
+    color = pygame.Color(255, 255, 255, self._alpha)
+    pygame.draw.circle(surf, color, centrish, 10, width=1)
+
+    color = pygame.Color(255, 255, 255, self._alpha)
+    pygame.draw.circle(surf, color, self._centrish, 10, width=3)
+
+  def _get_endpoint(self, segment:Segment):
+    return segment.position + segment.direction * segment.length

@@ -222,6 +222,7 @@ while running:
 
   alpha_surf.fill((0, 0, 0, 0))
   primary_veins.render_to(alpha_surf)
+  primary_veins.render_perimeter_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
