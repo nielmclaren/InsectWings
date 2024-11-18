@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from math import floor
 import pygame
+import random
+from shapely.geometry import Polygon
 
 from param_set import ParamSet
 from param_helpers import quadratic_param_to_vector2, param_to_vector2
@@ -23,7 +25,7 @@ class PrimaryVeins:
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    self._centrish = self._get_centrish(parameters, self._root_segments)
+    self._area_totals = []
 
   def has_collision(self):
     return self._first_intersection != False
@@ -126,18 +128,6 @@ class PrimaryVeins:
       return self._detect_collision(next_frontier, accumulator)
     return False
   
-  def _get_centrish(self, parameters:ParamSet, root_segments:list[Segment]):
-    index = floor(len(self._root_segments) / 2) - 1
-    seg = self._root_segments[index]
-    p = subdict(parameters, 'max_generations')
-    max_generations = p['quadratic'] * pow(index, 2) + p['linear'] * index + p['const']
-    half_generation = floor(max_generations / 2)
-
-    while seg.generation < half_generation:
-      seg = seg.children[0]
-
-    return seg.position
-        
   def _render_segment_and_descendants(self, surf, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
     pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 2)
@@ -151,6 +141,9 @@ class PrimaryVeins:
     if self._first_intersection:
       color = pygame.Color(255, 255, 255, self._alpha)
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
+
+  def _get_flood_fill_point(self, seg0:Segment, seg1:Segment):
+    return (seg0.position + self._get_endpoint(seg0) + seg1.position + self._get_endpoint(seg1)) / 4
 
   def render_perimeter_to(self, surf):
     index = 0
@@ -173,29 +166,93 @@ class PrimaryVeins:
           self._get_endpoint(prev_segment),
           self._get_endpoint(segment), 2)
       prev_segment = segment
-    
-    # TODO: Oh, I can do [-1] right?
-    corners = [
-      self._root_segments[0].position,
-      self._get_endpoint(self._tip_segments[0]),
-      self._root_segments[-1].position,
-      self._get_endpoint(self._tip_segments[-1])
-    ]
 
-    for pos in corners:
+    self._area_totals = []
+    prev_segment = False
+    for segment in self._root_segments:
+      if prev_segment:
+        color = pygame.Color(255, 0, 0)
+        pos = self._get_flood_fill_point(prev_segment, segment)
+        self._area_totals.append(self._flood_fill(surf, pos, color))
+      prev_segment = segment
+
+    self._area_totals2 = []
+    prev_segment = False
+    for segment in self._root_segments:
+      if prev_segment:
+        self._area_totals2.append(self._get_area(segment, prev_segment))
+      prev_segment = segment
+
+    prev_segment = False
+    for segment in self._root_segments:
       color = pygame.Color(255, 255, 255, self._alpha)
-      pygame.draw.circle(surf, color, pos, 10, width=3)
+      if prev_segment:
+        pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
+        pos = self._get_flood_fill_point(prev_segment, segment)
+        color = pygame.Color(255, 255, 255, self._alpha)
+        pygame.draw.circle(surf, color, pos, 3, width=3)
+      prev_segment = segment
+    
+    for n in self._area_totals:
+      print(f"{n} ", end="")
+    print()
 
-    centrish = pygame.Vector2()
-    for pos in corners:
-      centrish += pos
-    centrish /= len(corners)
-
-    color = pygame.Color(255, 255, 255, self._alpha)
-    pygame.draw.circle(surf, color, centrish, 10, width=1)
-
-    color = pygame.Color(255, 255, 255, self._alpha)
-    pygame.draw.circle(surf, color, self._centrish, 10, width=3)
-
+    for n in self._area_totals2:
+      print(f"{round(n)} ", end="")
+    print()
+ 
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
+  
+  def _flood_fill(self, surf, position:pygame.Vector2, color:pygame.Color):
+    pos = (floor(position.x), floor(position.y))
+    fill_color = surf.map_rgb(color) # Convert the color to mapped integer value.
+    print(f"Fill color: {fill_color} unmapped: {surf.unmap_rgb(fill_color)}")
+    surf_array = pygame.surfarray.pixels2d(surf) # Create an array from the surface.
+    print(f"Surf array: {len(surf_array)}x{len(surf_array[0])}")
+    current_color = surf_array[pos] # Get the mapped integer color value at the fill position.
+    print(f"Current color: {current_color} unmapped: {surf.unmap_rgb(current_color)}")
+
+    if current_color == fill_color:
+      return
+
+    frontier = [pos]
+    area = 0
+    while len(frontier) > 0:
+        x, y = frontier.pop()
+        try:  # Add a try-except block in case the position is outside the surface.
+            if surf_array[x, y] != current_color:
+                continue
+        except IndexError:
+            continue
+        surf_array[x, y] = fill_color
+        area += 1
+
+        # Then we append the neighbours of the pixel in the current position to our 'frontier' list.
+        frontier.append((x + 1, y))  # Right.
+        frontier.append((x - 1, y))  # Left.
+        frontier.append((x, y + 1))  # Down.
+        frontier.append((x, y - 1))  # Up.
+
+    pygame.surfarray.blit_array(surf, surf_array)
+    return area
+
+  def _get_area(self, seg0, seg1):
+    # Get a list of points traveling down seg0 and up seg1.
+    points = []
+    points.extend(self._get_segment_points(seg0))
+    points.extend(reversed(self._get_segment_points(seg1)))
+    polygon = Polygon(points)
+    return polygon.area
+  
+  def _get_segment_points(self, segment:Segment):
+    result = []
+    while True:
+      result.append((segment.position.x, segment.position.y))
+      if len(segment.children) > 0:
+        segment = segment.children[0]
+      else:
+        break
+    endpoint = self._get_endpoint(segment)
+    result.append((endpoint.x, endpoint.y))
+    return result

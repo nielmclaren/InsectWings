@@ -121,7 +121,7 @@ def save_animation_frame(surf, frame_index):
 args = get_args()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-alpha_surf = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+alpha_surf = pygame.Surface(screen.get_size(), masks=pygame.SRCALPHA)
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
