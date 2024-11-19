@@ -25,7 +25,7 @@ class PrimaryVeins:
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    self._area_totals = []
+    self._area_totals = self._get_area_totals(self._root_segments)
 
   def has_collision(self):
     return self._first_intersection != False
@@ -142,9 +142,6 @@ class PrimaryVeins:
       color = pygame.Color(255, 255, 255, self._alpha)
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
 
-  def _get_flood_fill_point(self, seg0:Segment, seg1:Segment):
-    return (seg0.position + self._get_endpoint(seg0) + seg1.position + self._get_endpoint(seg1)) / 4
-
   def render_perimeter_to(self, surf):
     index = 0
     self._render_segment_and_descendants(surf, index, self._root_segments[index])
@@ -166,76 +163,18 @@ class PrimaryVeins:
           self._get_endpoint(prev_segment),
           self._get_endpoint(segment), 2)
       prev_segment = segment
-
-    self._area_totals = []
-    prev_segment = False
-    for segment in self._root_segments:
-      if prev_segment:
-        color = pygame.Color(255, 0, 0)
-        pos = self._get_flood_fill_point(prev_segment, segment)
-        self._area_totals.append(self._flood_fill(surf, pos, color))
-      prev_segment = segment
-
-    self._area_totals2 = []
-    prev_segment = False
-    for segment in self._root_segments:
-      if prev_segment:
-        self._area_totals2.append(self._get_area(segment, prev_segment))
-      prev_segment = segment
-
-    prev_segment = False
-    for segment in self._root_segments:
-      color = pygame.Color(255, 255, 255, self._alpha)
-      if prev_segment:
-        pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
-        pos = self._get_flood_fill_point(prev_segment, segment)
-        color = pygame.Color(255, 255, 255, self._alpha)
-        pygame.draw.circle(surf, color, pos, 3, width=3)
-      prev_segment = segment
-    
-    for n in self._area_totals:
-      print(f"{n} ", end="")
-    print()
-
-    for n in self._area_totals2:
-      print(f"{round(n)} ", end="")
-    print()
  
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
-  
-  def _flood_fill(self, surf, position:pygame.Vector2, color:pygame.Color):
-    pos = (floor(position.x), floor(position.y))
-    fill_color = surf.map_rgb(color) # Convert the color to mapped integer value.
-    print(f"Fill color: {fill_color} unmapped: {surf.unmap_rgb(fill_color)}")
-    surf_array = pygame.surfarray.pixels2d(surf) # Create an array from the surface.
-    print(f"Surf array: {len(surf_array)}x{len(surf_array[0])}")
-    current_color = surf_array[pos] # Get the mapped integer color value at the fill position.
-    print(f"Current color: {current_color} unmapped: {surf.unmap_rgb(current_color)}")
 
-    if current_color == fill_color:
-      return
-
-    frontier = [pos]
-    area = 0
-    while len(frontier) > 0:
-        x, y = frontier.pop()
-        try:  # Add a try-except block in case the position is outside the surface.
-            if surf_array[x, y] != current_color:
-                continue
-        except IndexError:
-            continue
-        surf_array[x, y] = fill_color
-        area += 1
-
-        # Then we append the neighbours of the pixel in the current position to our 'frontier' list.
-        frontier.append((x + 1, y))  # Right.
-        frontier.append((x - 1, y))  # Left.
-        frontier.append((x, y + 1))  # Down.
-        frontier.append((x, y - 1))  # Up.
-
-    pygame.surfarray.blit_array(surf, surf_array)
-    return area
+  def _get_area_totals(self, root_segments):
+    result = []
+    prev_segment = False
+    for segment in root_segments:
+      if prev_segment:
+        result.append(self._get_area(segment, prev_segment))
+      prev_segment = segment
+    return result
 
   def _get_area(self, seg0, seg1):
     # Get a list of points traveling down seg0 and up seg1.
