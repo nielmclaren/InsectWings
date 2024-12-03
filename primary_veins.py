@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from math import floor
 import pygame
 import random
-from shapely.geometry import Polygon
+from shapely.geometry import MultiPoint, Point, Polygon
+from shapely import intersection, normalize, voronoi_polygons
 
 from param_set import ParamSet
 from param_helpers import quadratic_param_to_vector2, param_to_vector2
@@ -25,11 +26,12 @@ class PrimaryVeins:
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    self._area_totals = self._get_area_totals(self._root_segments)
+    self._inhibitory_centers = self._get_all_inhibitory_centers(self._root_segments)
+    self._voronoi_polygons = self._get_all_voronoi_polygons(self._inhibitory_centers, self._root_segments)
 
   def has_collision(self):
     return self._first_intersection != False
-  
+
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
     return (
         param_to_vector2(parameters, 'root_segment_dir_quadratic') * pow(index, 2) + \
@@ -127,7 +129,7 @@ class PrimaryVeins:
     if len(next_frontier) > 0:
       return self._detect_collision(next_frontier, accumulator)
     return False
-  
+
   def _render_segment_and_descendants(self, surf, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
     pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 2)
@@ -137,22 +139,35 @@ class PrimaryVeins:
   def render_to(self, surf):
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
+      # TODO: Remove the following break when you're finished testing using only the first region.
+      if index > 0:
+        break
 
+    color = pygame.Color(255, 255, 255, self._alpha)
     if self._first_intersection:
-      color = pygame.Color(255, 255, 255, self._alpha)
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
 
+    color = pygame.Color(255, 255, 255)
+    for p in self._inhibitory_centers.geoms:
+      pygame.draw.circle(surf, color, (p.x, p.y), 2, width=0)
+
+    color = pygame.Color(255, 255, 255)
+    for polygon in self._voronoi_polygons:
+      points = tuple(polygon.exterior.coords)
+      prev_point = False
+      for point in points:
+        if prev_point:
+          pygame.draw.line(surf, color, prev_point, point)
+        prev_point = point
+
   def render_perimeter_to(self, surf):
-    index = 0
-    self._render_segment_and_descendants(surf, index, self._root_segments[index])
-    index = len(self._root_segments) - 1
-    self._render_segment_and_descendants(surf, index, self._root_segments[index])
-    
     prev_segment = False
     for segment in self._root_segments:
       color = pygame.Color(255, 255, 255, self._alpha)
       if prev_segment:
         pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
+        # TODO: Remove the following break when you're finished testing using only the first region.
+        break
       prev_segment = segment
 
     prev_segment = False
@@ -162,28 +177,13 @@ class PrimaryVeins:
         pygame.draw.line(surf, color,
           self._get_endpoint(prev_segment),
           self._get_endpoint(segment), 2)
+        # TODO: Remove the following break when you're finished testing using only the first region.
+        break
       prev_segment = segment
- 
+
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
 
-  def _get_area_totals(self, root_segments):
-    result = []
-    prev_segment = False
-    for segment in root_segments:
-      if prev_segment:
-        result.append(self._get_area(segment, prev_segment))
-      prev_segment = segment
-    return result
-
-  def _get_area(self, seg0, seg1):
-    # Get a list of points traveling down seg0 and up seg1.
-    points = []
-    points.extend(self._get_segment_points(seg0))
-    points.extend(reversed(self._get_segment_points(seg1)))
-    polygon = Polygon(points)
-    return polygon.area
-  
   def _get_segment_points(self, segment:Segment):
     result = []
     while True:
@@ -195,3 +195,72 @@ class PrimaryVeins:
     endpoint = self._get_endpoint(segment)
     result.append((endpoint.x, endpoint.y))
     return result
+
+  def _get_all_inhibitory_centers(self, root_segments):
+    result = []
+    prev_segment = False
+    for segment in root_segments:
+      if prev_segment:
+        result.extend(self._get_inhibitory_centers(prev_segment, segment))
+        # TODO: Remove the following break when you're finished testing using only the first region.
+        break
+      prev_segment = segment
+    return MultiPoint(result)
+
+  def _get_inhibitory_centers(self, seg0, seg1):
+    polygon = self._get_polygon(seg0, seg1)
+    area = polygon.area
+    bounds = polygon.bounds
+    min_distance = 30
+
+    print(f"Area: {area}")
+
+    max_failed_attempts = 100
+    failed_attempts = 0
+    max_results = 100 # TODO Scale this based on the area.
+    multi_point = MultiPoint([])
+    while len(multi_point.geoms) < max_results:
+      if failed_attempts >= max_failed_attempts:
+        print(f"Max failed attempts reached. num_points={len(multi_point.geoms)}")
+        break
+
+      candidate = Point(random.uniform(bounds[0], bounds[2]), random.uniform(bounds[1], bounds[3]))
+
+      if not polygon.contains(candidate):
+        failed_attempts += 1
+        continue
+      # TODO: Might need to use a line string here.
+
+      # if polygon.dwithin(candidate, min_distance):
+      #   failed_attempts += 1
+      #   continue
+
+      if multi_point.dwithin(candidate, min_distance):
+        failed_attempts += 1
+        continue
+
+      multi_point = MultiPoint(list(multi_point.geoms) + [candidate])
+      failed_attempts = 0
+    return map(lambda p: (p.x, p.y), list(multi_point.geoms))
+
+  def _get_all_voronoi_polygons(self, inhibitory_centers, root_segments):
+    result = []
+    prev_segment = False
+    for segment in root_segments:
+      if prev_segment:
+        remigium = self._get_polygon(prev_segment, segment)
+        result.extend(self._get_voronoi_polygons(inhibitory_centers, remigium))
+        # TODO: Remove the following break when you're finished testing using only the first region.
+        break
+      prev_segment = segment
+    return result
+
+  def _get_voronoi_polygons(self, inhibitory_centers, extent):
+    return intersection(normalize(voronoi_polygons(inhibitory_centers, extend_to=extent)).geoms, extent)
+
+  def _get_polygon(self, seg0, seg1):
+    # Get a list of points traveling down seg0 and up seg1.
+    points = []
+    points.extend(self._get_segment_points(seg0))
+    points.extend(reversed(self._get_segment_points(seg1)))
+    return Polygon(points)
