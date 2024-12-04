@@ -9,7 +9,6 @@ import pygame
 import pygame.freetype
 import pygame_gui
 import random
-from subdict import subdict
 from typing import Dict
 
 from get_param_defs import get_param_defs
@@ -222,7 +221,7 @@ while running:
 
   alpha_surf.fill((0, 0, 0, 0))
   vein_renderer.render_to(alpha_surf)
-  vein_renderer.render_perimeter_to(alpha_surf)
+  #vein_renderer.render_perimeter_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)

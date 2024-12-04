@@ -138,16 +138,13 @@ class VeinRenderer:
 
   def _render_segment_and_descendants(self, surf, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
-    pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 2)
+    pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 3)
     for child_segment in seg.children:
       self._render_segment_and_descendants(surf, index, child_segment)
 
   def render_to(self, surf):
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
-      # TODO: Remove the following break when you're finished testing using only the first region.
-      if index > 0:
-        break
 
     color = pygame.Color(255, 255, 255, self._alpha)
     if self._first_intersection:
@@ -162,8 +159,6 @@ class VeinRenderer:
       color = pygame.Color(255, 255, 255, self._alpha)
       if prev_segment:
         pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
-        # TODO: Remove the following break when you're finished testing using only the first region.
-        break
       prev_segment = segment
 
     prev_segment = False
@@ -173,8 +168,6 @@ class VeinRenderer:
         pygame.draw.line(surf, color,
           self._get_endpoint(prev_segment),
           self._get_endpoint(segment), 2)
-        # TODO: Remove the following break when you're finished testing using only the first region.
-        break
       prev_segment = segment
 
   def _get_endpoint(self, segment:Segment):
