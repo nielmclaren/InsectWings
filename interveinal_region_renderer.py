@@ -4,15 +4,14 @@ from shapely.geometry import MultiPoint, Point, Polygon
 from shapely import intersection, normalize, voronoi_polygons
 
 from param_set import ParamSet
-from primary_veins import PrimaryVeins
 
-class CrossVeins:
-  def __init__(self, primary_veins:PrimaryVeins, parameters:ParamSet):
+class InterveinalRegionRenderer:
+  def __init__(self, polygon, parameters:ParamSet):
     self._alpha = parameters['alpha']
-    self._interveinal_regions = primary_veins.get_interveinal_regions()
-    self._inhibitory_centers = self._get_all_inhibitory_centers(self._interveinal_regions)
-    self._voronoi_polygons = self._get_all_voronoi_polygons(self._inhibitory_centers, self._interveinal_regions)
-  
+    self._polygon = polygon
+    self._inhibitory_centers = self._get_inhibitory_centers(self._polygon)
+    self._voronoi_polygons = self._get_voronoi_polygons(self._inhibitory_centers, self._polygon)
+
   def render_to(self, surf):
     color = pygame.Color(255, 255, 255)
     for p in self._inhibitory_centers.geoms:
@@ -26,14 +25,6 @@ class CrossVeins:
         if prev_point:
           pygame.draw.line(surf, color, prev_point, point)
         prev_point = point
-
-  def _get_all_inhibitory_centers(self, interveinal_regions):
-    result = []
-    for interveinal_region in interveinal_regions:
-      result.extend(self._get_inhibitory_centers(interveinal_region))
-      # TODO: Remove the following break when you're finished testing using only the first region.
-      break
-    return MultiPoint(result)
 
   def _get_inhibitory_centers(self, interveinal_region):
     area = interveinal_region.area
@@ -68,15 +59,7 @@ class CrossVeins:
 
       multi_point = MultiPoint(list(multi_point.geoms) + [candidate])
       failed_attempts = 0
-    return map(lambda p: (p.x, p.y), list(multi_point.geoms))
-
-  def _get_all_voronoi_polygons(self, inhibitory_centers, interveinal_regions):
-    result = []
-    for interveinal_region in interveinal_regions:
-      result.extend(self._get_voronoi_polygons(inhibitory_centers, interveinal_region))
-      # TODO: Remove the following break when you're finished testing using only the first region.
-      break
-    return result
+    return multi_point
 
   def _get_voronoi_polygons(self, inhibitory_centers, extent):
     return intersection(normalize(voronoi_polygons(inhibitory_centers, extend_to=extent)).geoms, extent)

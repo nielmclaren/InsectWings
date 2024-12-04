@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import pygame
 from shapely.geometry import Polygon
 
+from interveinal_region_renderer import InterveinalRegionRenderer
 from param_set import ParamSet
 from param_helpers import quadratic_param_to_vector2, param_to_vector2
 from subdict import subdict
@@ -17,19 +18,16 @@ class Segment:
   children: list['Segment'] = field(default_factory=lambda: [])
 
 
-class PrimaryVeins:
+class VeinRenderer:
   def __init__(self, parameters:ParamSet):
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    self._interveinal_regions = self._get_interveinal_regions(self._root_segments)
+    self._interveinal_regions = self._get_interveinal_regions(self._root_segments, parameters)
 
   def has_collision(self):
     return self._first_intersection != False
-
-  def get_interveinal_regions(self):
-    return self._interveinal_regions
 
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
     return (
@@ -129,12 +127,12 @@ class PrimaryVeins:
       return self._detect_collision(next_frontier, accumulator)
     return False
 
-  def _get_interveinal_regions(self, root_segments):
+  def _get_interveinal_regions(self, root_segments, parameters:ParamSet):
     result = []
     prev_segment = False
     for segment in root_segments:
       if prev_segment:
-        result.append(self._get_polygon(prev_segment, segment))
+        result.append(InterveinalRegionRenderer(self._get_polygon(prev_segment, segment), parameters))
       prev_segment = segment
     return result
 
@@ -154,6 +152,9 @@ class PrimaryVeins:
     color = pygame.Color(255, 255, 255, self._alpha)
     if self._first_intersection:
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
+
+    for interveinal_region in self._interveinal_regions:
+      interveinal_region.render_to(surf)
 
   def render_perimeter_to(self, surf):
     prev_segment = False

@@ -15,8 +15,7 @@ from typing import Dict
 from get_param_defs import get_param_defs
 from param_def import ParamDef
 from param_set import ParamSet
-from primary_veins import PrimaryVeins
-from cross_veins import CrossVeins
+from vein_renderer import VeinRenderer
 from slider_panel import SliderPanel
 
 pygame.init()
@@ -37,8 +36,7 @@ screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
-primary_veins:PrimaryVeins
-cross_veins:CrossVeins
+vein_renderer:VeinRenderer
 
 def get_args():
   parser = argparse.ArgumentParser("./main_orthoptera.py")
@@ -55,9 +53,8 @@ def render_hud(surf, step, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed():
-  global primary_veins, cross_veins, step, animation_steps
-  primary_veins = PrimaryVeins(parameters)
-  cross_veins = CrossVeins(primary_veins, parameters)
+  global vein_renderer, step, animation_steps
+  vein_renderer = VeinRenderer(parameters)
   step = 0
   animation_steps = 0
   slider_panel.set_parameters(parameters)
@@ -98,8 +95,8 @@ def randomize_parameters():
   while True:
     for name in param_names:
       randomize_parameter(name)
-    primary_veins = PrimaryVeins(parameters)
-    if not primary_veins.has_collision():
+    vein_renderer = VeinRenderer(parameters)
+    if not vein_renderer.has_collision():
       break
   parameters_changed()
 
@@ -211,7 +208,7 @@ while running:
     uimanager.process_events(event)
 
   # Regenerate every frame to allow changes to the number of generations.
-  #primary_veins = PrimaryVeins(parameters)
+  #vein_renderer = VeinRenderer(parameters)
 
   uimanager.update(dt)
 
@@ -224,9 +221,8 @@ while running:
   screen.blit(reference_image_alpha, (-200, -300))
 
   alpha_surf.fill((0, 0, 0, 0))
-  primary_veins.render_to(alpha_surf)
-  primary_veins.render_perimeter_to(alpha_surf)
-  cross_veins.render_to(alpha_surf)
+  vein_renderer.render_to(alpha_surf)
+  vein_renderer.render_perimeter_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
