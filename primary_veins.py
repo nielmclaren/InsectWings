@@ -248,8 +248,8 @@ class PrimaryVeins:
     prev_segment = False
     for segment in root_segments:
       if prev_segment:
-        remigium = self._get_polygon(prev_segment, segment)
-        result.extend(self._get_voronoi_polygons(inhibitory_centers, remigium))
+        interveinal_region = self._get_polygon(prev_segment, segment)
+        result.extend(self._get_voronoi_polygons(inhibitory_centers, interveinal_region))
         # TODO: Remove the following break when you're finished testing using only the first region.
         break
       prev_segment = segment
