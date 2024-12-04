@@ -16,6 +16,7 @@ from get_param_defs import get_param_defs
 from param_def import ParamDef
 from param_set import ParamSet
 from primary_veins import PrimaryVeins
+from cross_veins import CrossVeins
 from slider_panel import SliderPanel
 
 pygame.init()
@@ -37,6 +38,7 @@ screenshot_index = 0
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
 primary_veins:PrimaryVeins
+cross_veins:CrossVeins
 
 def get_args():
   parser = argparse.ArgumentParser("./main_orthoptera.py")
@@ -53,8 +55,9 @@ def render_hud(surf, step, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed():
-  global primary_veins, step, animation_steps
+  global primary_veins, cross_veins, step, animation_steps
   primary_veins = PrimaryVeins(parameters)
+  cross_veins = CrossVeins(primary_veins, parameters)
   step = 0
   animation_steps = 0
   slider_panel.set_parameters(parameters)
@@ -223,6 +226,7 @@ while running:
   alpha_surf.fill((0, 0, 0, 0))
   primary_veins.render_to(alpha_surf)
   primary_veins.render_perimeter_to(alpha_surf)
+  cross_veins.render_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
