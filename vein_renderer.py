@@ -24,7 +24,11 @@ class VeinRenderer:
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    self._interveinal_regions = self._get_interveinal_regions(self._root_segments, parameters)
+    if self._first_intersection == False:
+      # Only generate interveinal regions if there is no collision between primary veins.
+      self._interveinal_regions = self._get_interveinal_regions(self._root_segments, parameters)
+    else:
+      self._interveinal_regions = []
 
   def has_collision(self):
     return self._first_intersection != False
@@ -143,15 +147,15 @@ class VeinRenderer:
       self._render_segment_and_descendants(surf, index, child_segment)
 
   def render_to(self, surf):
+    for interveinal_region in self._interveinal_regions:
+      interveinal_region.render_to(surf)
+
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
 
     color = pygame.Color(255, 255, 255, self._alpha)
     if self._first_intersection:
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
-
-    for interveinal_region in self._interveinal_regions:
-      interveinal_region.render_to(surf)
 
   def render_perimeter_to(self, surf):
     prev_segment = False
