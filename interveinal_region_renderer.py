@@ -9,30 +9,16 @@ class InterveinalRegionRenderer:
   def __init__(self, polygon, parameters:ParamSet):
     self._alpha = parameters['alpha']
     self._polygon = polygon
-    self._inhibitory_centers = self._get_inhibitory_centers(self._polygon)
+    inhibitory_centers = self._get_inhibitory_centers(self._polygon)
+    self._inhibitory_centers = self._lloyds_algorithm(inhibitory_centers, 50)
     self._voronoi_polygons = self._get_voronoi_polygons(self._inhibitory_centers, self._polygon)
-    self._inhibitory_centers2 = self._lloyds_algorithm(self._inhibitory_centers, 50)
-    self._voronoi_polygons2 = self._get_voronoi_polygons(self._inhibitory_centers2, self._polygon)
 
   def render_to(self, surf):
     color = pygame.Color(255, 255, 255)
-    for p in self._inhibitory_centers2.geoms:
-      pygame.draw.circle(surf, color, (p.x, p.y), 2, width=0)
-
-    color = pygame.Color(255, 0, 0)
     for p in self._inhibitory_centers.geoms:
       pygame.draw.circle(surf, color, (p.x, p.y), 2, width=0)
 
     color = pygame.Color(255, 255, 255)
-    for polygon in self._voronoi_polygons2:
-      points = tuple(polygon.exterior.coords)
-      prev_point = False
-      for point in points:
-        if prev_point:
-          pygame.draw.line(surf, color, prev_point, point)
-        prev_point = point
-
-    color = pygame.Color(255, 0, 0)
     for polygon in self._voronoi_polygons:
       points = tuple(polygon.exterior.coords)
       prev_point = False
