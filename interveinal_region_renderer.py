@@ -61,7 +61,8 @@ class InterveinalRegionRenderer:
     return multi_point
 
   def _get_voronoi_polygons(self, inhibitory_centers, extent):
-    return intersection(normalize(voronoi_polygons(inhibitory_centers, extend_to=extent)).geoms, extent)
+    polygons = normalize(voronoi_polygons(inhibitory_centers, extend_to=extent))
+    return intersection(polygons.geoms, extent)
 
   def _lloyds_algorithm(self, initial_inhibitory_centers:MultiPoint, iterations:int):
     inhibitory_centers = initial_inhibitory_centers

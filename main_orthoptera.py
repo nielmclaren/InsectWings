@@ -9,6 +9,7 @@ import pygame
 import pygame.freetype
 import pygame_gui
 import random
+from shapely.errors import GEOSException
 from typing import Dict
 
 from get_param_defs import get_param_defs
@@ -94,9 +95,12 @@ def randomize_parameters():
   while True:
     for name in param_names:
       randomize_parameter(name)
-    vein_renderer = VeinRenderer(parameters)
-    if not vein_renderer.has_collision():
-      break
+    try:
+      vein_renderer = VeinRenderer(parameters)
+      if not vein_renderer.has_collision():
+        break
+    except GEOSException:
+      print("GEOSException")
   parameters_changed()
 
 def export_wing(surf, index):
