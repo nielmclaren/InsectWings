@@ -20,18 +20,18 @@ class Segment:
 
 class VeinRenderer:
   def __init__(self, parameters:ParamSet):
+    self._parameters = parameters
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
-    if self._first_intersection == False:
-      # Only generate interveinal regions if there is no collision between primary veins.
-      self._interveinal_regions = self._get_interveinal_regions(self._root_segments, parameters)
-    else:
-      self._interveinal_regions = []
+    self._interveinal_regions = []
 
   def has_collision(self):
     return self._first_intersection != False
+  
+  def generate_cross_veins(self):
+    self._interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
 
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
     return (

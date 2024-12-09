@@ -192,20 +192,22 @@ while running:
     elif event.type == pygame.KEYDOWN:
       if event.key == pygame.K_ESCAPE:
         running = False
-      elif event.key == pygame.K_x:
-        export_wing(alpha_surf, export_index)
-        export_index += 1
-      elif event.key == pygame.K_r:
-        save_screenshot(screen, screenshot_index)
-        screenshot_index += 1
-      elif event.key == pygame.K_v:
-        save_parameters()
+      elif event.key == pygame.K_c:
+        vein_renderer.generate_cross_veins()
       elif event.key == pygame.K_l:
         load_parameters()
         parameters_changed()
       elif event.key == pygame.K_q:
         randomize_parameters()
         parameters_changed()
+      elif event.key == pygame.K_r:
+        save_screenshot(screen, screenshot_index)
+        screenshot_index += 1
+      elif event.key == pygame.K_v:
+        save_parameters()
+      elif event.key == pygame.K_x:
+        export_wing(alpha_surf, export_index)
+        export_index += 1
 
     slider_panel.process_events(event)
     uimanager.process_events(event)
