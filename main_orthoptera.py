@@ -28,6 +28,8 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
+MAX_TIP_DISTANCE = 100 # Reject wings with primary veins that are too far apart.
+
 step = 0
 export_index = 0
 animation_steps = 0
@@ -97,7 +99,8 @@ def randomize_parameters():
       randomize_parameter(name)
     try:
       vein_renderer = VeinRenderer(parameters)
-      if not vein_renderer.has_collision():
+      if not vein_renderer.has_tip_distance_greater_than(MAX_TIP_DISTANCE) \
+          and not vein_renderer.has_collision():
         break
     except GEOSException:
       print("GEOSException")
@@ -231,7 +234,7 @@ while running:
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
-  
+
   uimanager.draw_ui(screen)
 
   pygame.display.flip()
