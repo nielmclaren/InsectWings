@@ -1,6 +1,6 @@
 import pygame
 import random
-from shapely.geometry import MultiPoint, Point, Polygon
+from shapely.geometry import MultiPoint, Point
 from shapely import intersection, normalize, voronoi_polygons
 
 from param_set import ParamSet

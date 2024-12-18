@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 import pygame
-from shapely.geometry import Polygon
+from shapely.geometry import Point, Polygon
 
 from interveinal_region_renderer import InterveinalRegionRenderer
 from param_set import ParamSet
@@ -26,6 +26,23 @@ class VeinRenderer:
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._first_intersection = self._detect_collision(self._root_segments)
     self._interveinal_regions = []
+
+  def is_contained_by(self, bounds_rect:pygame.Rect):
+    bounds:Polygon = Polygon([
+      bounds_rect.topleft,
+      bounds_rect.topright,
+      bounds_rect.bottomright,
+      bounds_rect.bottomleft])
+
+    for root_segment in self._root_segments:
+      if not bounds.contains(Point(root_segment.position)):
+        return False
+
+    for tip_segment in self._tip_segments:
+      if not bounds.contains(Point(self._get_endpoint(tip_segment))):
+        return False
+
+    return True
 
   def has_tip_distance_greater_than(self, max_dist):
     tip_distances = self._get_tip_distances(self._tip_segments)
