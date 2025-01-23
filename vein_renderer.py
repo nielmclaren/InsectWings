@@ -191,23 +191,6 @@ class VeinRenderer:
     if self._first_intersection:
       pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
 
-  def render_perimeter_to(self, surf):
-    prev_segment = False
-    for segment in self._root_segments:
-      color = pygame.Color(255, 255, 255, self._alpha)
-      if prev_segment:
-        pygame.draw.line(surf, color, prev_segment.position, segment.position, 2)
-      prev_segment = segment
-
-    prev_segment = False
-    for segment in self._tip_segments:
-      color = pygame.Color(255, 255, 255, self._alpha)
-      if prev_segment:
-        pygame.draw.line(surf, color,
-          self._get_endpoint(prev_segment),
-          self._get_endpoint(segment), 2)
-      prev_segment = segment
-
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
 

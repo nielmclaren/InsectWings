@@ -100,10 +100,14 @@ def randomize_parameters():
       randomize_parameter(name)
     try:
       vein_renderer = VeinRenderer(parameters)
-      if vein_renderer.is_contained_by(TARGET_BOX) \
-          and not vein_renderer.has_tip_distance_greater_than(MAX_TIP_DISTANCE) \
-          and not vein_renderer.has_collision():
+      if not vein_renderer.is_contained_by(TARGET_BOX):
+        print("Rejected out of bounds.")
+      elif vein_renderer.has_collision():
+        print("Rejected overlapping primary veins.")
+      else:
+        print("Approved!")
         break
+
     except GEOSException:
       print("GEOSException")
   parameters_changed()
@@ -232,7 +236,6 @@ while running:
 
   alpha_surf.fill((0, 0, 0, 0))
   vein_renderer.render_to(alpha_surf)
-  #vein_renderer.render_perimeter_to(alpha_surf)
   screen.blit(alpha_surf)
 
   render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
