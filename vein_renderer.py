@@ -43,13 +43,6 @@ class VeinRenderer:
 
     return True
 
-  def has_tip_distance_greater_than(self, max_dist):
-    tip_distances = self._get_tip_distances(self._tip_segments)
-    for dist in tip_distances:
-      if dist > max_dist:
-        return True
-    return False
-
   def has_collision(self):
     return self._detect_collision(self._root_segments) != False
 
@@ -109,16 +102,6 @@ class VeinRenderer:
       while len(segment.children) > 0:
         segment = segment.children[0]
       result.append(segment)
-    return result
-
-  def _get_tip_distances(self, tip_segments:list[Segment]):
-    result = []
-    prev_endpoint = False
-    for tip_segment in tip_segments:
-      endpoint = self._get_endpoint(tip_segment)
-      if prev_endpoint:
-        result.append((endpoint - prev_endpoint).magnitude())
-      prev_endpoint = endpoint
     return result
 
   def _intersection(self, seg0:Segment, seg1:Segment):

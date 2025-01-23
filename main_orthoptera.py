@@ -28,7 +28,6 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
-MAX_TIP_DISTANCE = 100 # Reject wings with primary veins that are too far apart.
 TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
 
 step = 0
