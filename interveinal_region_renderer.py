@@ -15,10 +15,6 @@ class InterveinalRegionRenderer:
 
   def render_to(self, surf):
     color = pygame.Color(255, 255, 255)
-    for p in self._inhibitory_centers.geoms:
-      pygame.draw.circle(surf, color, (p.x, p.y), 2, width=0)
-
-    color = pygame.Color(255, 255, 255)
     for polygon in self._voronoi_polygons:
       points = tuple(polygon.exterior.coords)
       prev_point = False
