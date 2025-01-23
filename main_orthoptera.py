@@ -1,6 +1,5 @@
 #!./venv/bin/python3
 
-import argparse
 import json
 from math import floor
 import numpy as np
@@ -21,7 +20,6 @@ from slider_panel import SliderPanel
 pygame.init()
 pygame.freetype.init()
 
-ANIMATION_STEPS_PER_FRAME = 30
 HUD_FONT = pygame.freetype.Font("DejaVuSansMono.ttf", 12)
 MAX_FPS = 60
 SCREEN_WIDTH = 1600
@@ -32,18 +30,11 @@ TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCRE
 
 step = 0
 export_index = 0
-animation_steps = 0
-animation_frame_index = 0
 screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
 vein_renderer:VeinRenderer
-
-def get_args():
-  parser = argparse.ArgumentParser("./main_orthoptera.py")
-  parser.add_argument("-a", "--animate", help="Record frames for an animation.", action="store_const", const=True, required=False)
-  return parser.parse_args()
 
 def render_hud(surf, step, fps):
   text_color = (255, 255, 255)
@@ -55,11 +46,10 @@ def render_hud(surf, step, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed(vein_renderer_invalid:bool=True):
-  global vein_renderer, step, animation_steps
+  global vein_renderer, step
   if vein_renderer_invalid:
     vein_renderer = VeinRenderer(parameters)
   step = 0
-  animation_steps = 0
   slider_panel.set_parameters(parameters)
 
 def load_parameters():
@@ -124,13 +114,6 @@ def save_screenshot(surf, index):
   filename = f"output/orthoptera_{str(index).zfill(3)}.png"
   pygame.image.save(surf, f"{filename}")
   print(f"Saved screenshot {filename}")
-
-def save_animation_frame(surf, frame_index):
-  filename = f"output/frame_{str(frame_index).zfill(4)}.png"
-  pygame.image.save(surf, f"{filename}")
-  print(f"Saved frame {filename}")
-
-args = get_args()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 alpha_surf = pygame.Surface(screen.get_size(), masks=pygame.SRCALPHA)
@@ -246,12 +229,6 @@ while running:
   fps_array.append(1 / dt)
   fps_array = fps_array[:10]
 
-  if args.animate and animation_steps >= ANIMATION_STEPS_PER_FRAME:
-    save_animation_frame(screen, animation_frame_index)
-    animation_frame_index += 1
-    animation_steps = 0
-  
   step += 1
-  animation_steps += 1
 
 pygame.quit()
