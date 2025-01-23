@@ -54,9 +54,10 @@ def render_hud(surf, step, fps):
   text = f"FPS: {fps}"
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
-def parameters_changed():
+def parameters_changed(vein_renderer_invalid:bool=True):
   global vein_renderer, step, animation_steps
-  vein_renderer = VeinRenderer(parameters)
+  if vein_renderer_invalid:
+    vein_renderer = VeinRenderer(parameters)
   step = 0
   animation_steps = 0
   slider_panel.set_parameters(parameters)
@@ -109,7 +110,7 @@ def randomize_parameters():
 
     except GEOSException:
       print("GEOSException")
-  parameters_changed()
+  parameters_changed(False)
 
 def export_wing(surf, index):
   filename = f"output/wing_{str(index).zfill(3)}.png"
@@ -217,11 +218,8 @@ while running:
         export_wing(alpha_surf, export_index)
         export_index += 1
 
-    slider_panel.process_events(event)
+    slider_panel.process_events(event, parameters_changed)
     uimanager.process_events(event)
-
-  # Regenerate every frame to allow changes to the number of generations.
-  #vein_renderer = VeinRenderer(parameters)
 
   uimanager.update(dt)
 

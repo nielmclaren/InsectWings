@@ -102,13 +102,18 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     self._ui_element_to_entry[slider] = entry
     self._curr_y += LABEL_HEIGHT + SLIDER_HEIGHT - ADJUSTMENT
 
-  def process_events(self, event:pygame.event.Event):
+  def process_events(self, event:pygame.event.Event, parameters_changed_callback):
+    invalid = False
     if event.type == pygame_gui.UI_HORIZONTAL_SLIDER_MOVED:
       entry: Entry = self._ui_element_to_entry[event.dict['ui_element']]
       if entry:
         value = entry.slider.get_current_value()
         self._parameters[entry.param_name] = value
         entry.value_textbox.set_text(self._format_value(value, entry.param_type))
+        invalid = True
+
+    if invalid:
+      parameters_changed_callback()
 
   def _format_value(self, param_value: Union[int, float], param_type: str):
     if param_type == 'float':
