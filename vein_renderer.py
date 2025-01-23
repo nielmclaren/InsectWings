@@ -24,7 +24,6 @@ class VeinRenderer:
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
-    self._first_intersection = self._detect_collision(self._root_segments)
     self._interveinal_regions = []
 
   def is_contained_by(self, bounds_rect:pygame.Rect):
@@ -52,7 +51,7 @@ class VeinRenderer:
     return False
 
   def has_collision(self):
-    return self._first_intersection != False
+    return self._detect_collision(self._root_segments) != False
 
   def generate_cross_veins(self):
     self._interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
@@ -186,10 +185,6 @@ class VeinRenderer:
 
     for index, root_segment in enumerate(self._root_segments):
       self._render_segment_and_descendants(surf, index, root_segment)
-
-    color = pygame.Color(255, 255, 255, self._alpha)
-    if self._first_intersection:
-      pygame.draw.circle(surf, color, self._first_intersection, 10, width=3)
 
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
