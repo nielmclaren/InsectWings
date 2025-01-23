@@ -28,7 +28,6 @@ SLIDER_PANEL_WIDTH = 350
 
 TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
 
-step = 0
 export_index = 0
 screenshot_index = 0
 
@@ -36,20 +35,15 @@ param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
 vein_renderer:VeinRenderer
 
-def render_hud(surf, step, fps):
+def render_hud(surf, fps):
   text_color = (255, 255, 255)
-  hud_pos = [10, 10]
-  HUD_FONT.render_to(surf, hud_pos, f"Step: {step}", text_color)
-
-  hud_pos = [10, SCREEN_WIDTH - 10]
   text = f"FPS: {fps}"
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed(vein_renderer_invalid:bool=True):
-  global vein_renderer, step
+  global vein_renderer
   if vein_renderer_invalid:
     vein_renderer = VeinRenderer(parameters)
-  step = 0
   slider_panel.set_parameters(parameters)
 
 def load_parameters():
@@ -218,7 +212,7 @@ while running:
   vein_renderer.render_to(alpha_surf)
   screen.blit(alpha_surf)
 
-  render_hud(screen, step, floor(np.average(fps_array)) if len(fps_array) else 0)
+  render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)
 
   uimanager.draw_ui(screen)
 
@@ -228,7 +222,5 @@ while running:
 
   fps_array.append(1 / dt)
   fps_array = fps_array[:10]
-
-  step += 1
 
 pygame.quit()
