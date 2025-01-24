@@ -116,7 +116,7 @@ def save_screenshot(surf, index):
   print(f"Saved screenshot {filename}")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-wing_surf = pygame.Surface(screen.get_size(), masks=pygame.SRCALPHA)
+wing_surf = pygame.Surface(screen.get_size())
 wing_surf = wing_surf.convert_alpha(screen)
 reference_surf = pygame.Surface(screen.get_size())
 
