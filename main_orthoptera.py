@@ -26,6 +26,7 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
+REFERENCE_IMAGE_OFFSET = (-200, -300)
 TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
 
 export_index = 0
@@ -41,10 +42,15 @@ def render_hud(surf, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed(vein_renderer_invalid:bool=True):
-  global vein_renderer
+  global reference_image, reference_surf, screen, vein_renderer
+
   if vein_renderer_invalid:
     vein_renderer = VeinRenderer(parameters)
   slider_panel.set_parameters(parameters)
+
+  reference_surf = pygame.Surface(screen.get_size())
+  reference_surf.blit(reference_image, REFERENCE_IMAGE_OFFSET)
+  reference_surf.set_alpha(parameters["reference_alpha"])
 
 def load_parameters():
   global parameters, slider_panel
@@ -110,7 +116,10 @@ def save_screenshot(surf, index):
   print(f"Saved screenshot {filename}")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-alpha_surf = pygame.Surface(screen.get_size(), masks=pygame.SRCALPHA)
+wing_surf = pygame.Surface(screen.get_size(), masks=pygame.SRCALPHA)
+wing_surf = wing_surf.convert_alpha(screen)
+reference_surf = pygame.Surface(screen.get_size())
+
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
@@ -166,7 +175,6 @@ for name in slider_param_names:
 
 reference_image = pygame.image.load('assets/orthoptera_dark.png')
 reference_image = pygame.transform.scale_by(reference_image, 4)
-reference_image_alpha = reference_image.copy()
 fps_array = []
 
 parameters_changed()
@@ -192,7 +200,7 @@ while running:
       elif event.key == pygame.K_v:
         save_parameters()
       elif event.key == pygame.K_x:
-        export_wing(alpha_surf, export_index)
+        export_wing(wing_surf, export_index)
         export_index += 1
 
     slider_panel.process_events(event, parameters_changed)
@@ -201,16 +209,11 @@ while running:
   uimanager.update(dt)
 
   screen.fill("black")
+  screen.blit(reference_surf)
 
-  # Don't allocate the translucent reference image on every draw. Can allocate when
-  # the reference alpha property changes.
-  reference_image_alpha = reference_image.copy()
-  reference_image_alpha.fill((255, 255, 255, parameters["reference_alpha"]), None, pygame.BLEND_RGBA_MULT)
-  screen.blit(reference_image_alpha, (-200, -300))
-
-  alpha_surf.fill((0, 0, 0, 0))
-  vein_renderer.render_to(alpha_surf)
-  screen.blit(alpha_surf)
+  wing_surf.fill((0, 0, 0, 0))
+  vein_renderer.render_to(wing_surf)
+  screen.blit(wing_surf)
 
   render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)
 
