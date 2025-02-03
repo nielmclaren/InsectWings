@@ -14,7 +14,6 @@ def get_param_defs() -> Dict[str, ParamDef]:
     ParamDef("root_segment_pos_quadratic_x", "float", (-5, 5)),
     ParamDef("root_segment_pos_quadratic_y", "float", (-5, 5)),
     ParamDef("root_segment_len", "float", (0, 100)),
-    ParamDef("root_segment_len_factor", "float", (0.2, 1.2)),
     ParamDef("root_segment_dir_const_x", "float", (-10, 10)),
     ParamDef("root_segment_dir_const_y", "float", (-10, 10)),
     ParamDef("root_segment_dir_linear_x", "float", (-5, 5)),
@@ -33,7 +32,7 @@ def get_param_defs() -> Dict[str, ParamDef]:
     ParamDef("segment_dir_c_y", "float", (-0.05, 0.05)),
     ParamDef("segment_dir_d_x", "float", (-0.1, 0.1)),
     ParamDef("segment_dir_d_y", "float", (-0.1, 0.1)),
-    ParamDef("segment_len_factor", "float", (0, 0)),
+    ParamDef("segment_len_factor", "float", (0.2, 1.2)),
     ParamDef("max_generations_const", "int", (0, 0)),
     ParamDef("max_generations_linear", "float", (0, 0)),
     ParamDef("max_generations_quadratic", "float", (0, 0))
