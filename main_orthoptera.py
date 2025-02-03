@@ -26,6 +26,8 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
+TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
+
 EDIT_MODE = "edit_mode"
 PREVIEW_MODE = "preview_mode"
 
@@ -150,12 +152,12 @@ slider_param_names = [
   "root_segment_pos_quadratic_x",
   "root_segment_pos_quadratic_y",
 
-  # "root_segment_dir_const_x",
-  # "root_segment_dir_const_y",
-  # "root_segment_dir_linear_x",
-  # "root_segment_dir_linear_y",
-  # "root_segment_dir_quadratic_x",
-  # "root_segment_dir_quadratic_y",
+  "root_segment_dir_const_x",
+  "root_segment_dir_const_y",
+  "root_segment_dir_linear_x",
+  "root_segment_dir_linear_y",
+  "root_segment_dir_quadratic_x",
+  "root_segment_dir_quadratic_y",
 
   "segment_dir_linear_x",
   "segment_dir_linear_y",
