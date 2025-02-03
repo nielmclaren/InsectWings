@@ -29,12 +29,17 @@ SLIDER_PANEL_WIDTH = 350
 REFERENCE_IMAGE_OFFSET = (-200, -300)
 TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
 
+EDIT_MODE = "edit_mode"
+PREVIEW_MODE = "preview_mode"
+
 export_index = 0
 screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = ParamSet.defaults()
 vein_renderer:VeinRenderer
+
+mode = EDIT_MODE
 
 def render_hud(surf, fps):
   text_color = (255, 255, 255)
@@ -116,8 +121,11 @@ def save_screenshot(surf, index):
   print(f"Saved screenshot {filename}")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-wing_surf = pygame.Surface(screen.get_size())
-wing_surf = wing_surf.convert_alpha(screen)
+half_screen_size = (screen.get_size()[0]/2, screen.get_size()[1])
+left_wing_surf = pygame.Surface(half_screen_size)
+left_wing_surf = left_wing_surf.convert_alpha(screen)
+right_wing_surf = pygame.Surface(half_screen_size)
+right_wing_surf = right_wing_surf.convert_alpha(screen)
 reference_surf = pygame.Surface(screen.get_size())
 
 pygame.display.set_caption("Orthoptera")
@@ -139,15 +147,15 @@ slider_param_names = [
   # "max_generations_linear",
   # "max_generations_quadratic",
 
-  # "root_segment_len",
-  # "segment_len_factor",
+  "root_segment_len",
+  "segment_len_factor",
 
-  # "root_segment_pos_const_x",
-  # "root_segment_pos_const_y",
-  # "root_segment_pos_linear_x",
-  # "root_segment_pos_linear_y",
-  # "root_segment_pos_quadratic_x",
-  # "root_segment_pos_quadratic_y",
+  "root_segment_pos_const_x",
+  "root_segment_pos_const_y",
+  "root_segment_pos_linear_x",
+  "root_segment_pos_linear_y",
+  "root_segment_pos_quadratic_x",
+  "root_segment_pos_quadratic_y",
 
   # "root_segment_dir_const_x",
   # "root_segment_dir_const_y",
@@ -161,14 +169,14 @@ slider_param_names = [
   "segment_dir_quadratic_x",
   "segment_dir_quadratic_y",
 
-  "segment_dir_a_x",
-  "segment_dir_a_y",
-  "segment_dir_b_x",
-  "segment_dir_b_y",
-  "segment_dir_c_x",
-  "segment_dir_c_y",
-  "segment_dir_d_x",
-  "segment_dir_d_y",
+  # "segment_dir_a_x",
+  # "segment_dir_a_y",
+  # "segment_dir_b_x",
+  # "segment_dir_b_y",
+  # "segment_dir_c_x",
+  # "segment_dir_c_y",
+  # "segment_dir_d_x",
+  # "segment_dir_d_y",
 ]
 for name in slider_param_names:
   slider_panel.add_slider(param_defs[name])
@@ -202,6 +210,11 @@ while running:
       elif event.key == pygame.K_x:
         export_wing(wing_surf, export_index)
         export_index += 1
+      elif event.key == pygame.K_m:
+        if mode == EDIT_MODE:
+          mode = PREVIEW_MODE
+        elif mode == PREVIEW_MODE:
+          mode = EDIT_MODE
 
     slider_panel.process_events(event, parameters_changed)
     uimanager.process_events(event)
@@ -209,15 +222,24 @@ while running:
   uimanager.update(dt)
 
   screen.fill("black")
-  screen.blit(reference_surf)
 
-  wing_surf.fill((0, 0, 0, 0))
-  vein_renderer.render_to(wing_surf)
-  screen.blit(wing_surf)
+  if mode == EDIT_MODE:
+    screen.blit(reference_surf)
+
+  left_wing_surf.fill((0, 0, 0, 0))
+  vein_renderer.render_to(left_wing_surf)
+  left_wing_surf = pygame.transform.flip(left_wing_surf, True, False)
+  screen.blit(left_wing_surf)
+
+  right_wing_surf.fill((0, 0, 0, 0))
+  vein_renderer.render_to(right_wing_surf)
+  screen.blit(right_wing_surf, (half_screen_size[0], 0))
 
   render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)
 
-  uimanager.draw_ui(screen)
+  if mode == EDIT_MODE:
+    uimanager.draw_ui(screen)
+
 
   pygame.display.flip()
 
