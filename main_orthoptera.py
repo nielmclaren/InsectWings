@@ -100,12 +100,14 @@ def randomize_parameters():
       print("GEOSException")
   parameters_changed(False)
 
-def export_wing(surf, index):
+def export_wing(left_surf, right_surf, index):
   filename = f"output/wing_{str(index).zfill(3)}.png"
-  bounds = surf.get_bounding_rect()
-  cropped = surf.subsurface(bounds)
+  result = pygame.Surface(screen.get_size())
+  result.fill((0, 0, 0))
+  result.blit(left_surf)
+  result.blit(right_surf, (half_screen_size[0], 0))
 
-  pygame.image.save(cropped, f"{filename}")
+  pygame.image.save(result, f"{filename}")
   print(f"Saved wing {filename}")
 
 def save_screenshot(surf, index):
@@ -197,7 +199,7 @@ while running:
       elif event.key == pygame.K_v:
         save_parameters()
       elif event.key == pygame.K_x:
-        export_wing(wing_surf, export_index)
+        export_wing(left_wing_surf, right_wing_surf, export_index)
         export_index += 1
       elif event.key == pygame.K_m:
         if mode == EDIT_MODE:
