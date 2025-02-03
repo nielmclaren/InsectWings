@@ -26,9 +26,6 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
-REFERENCE_IMAGE_OFFSET = (-200, -300)
-TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
-
 EDIT_MODE = "edit_mode"
 PREVIEW_MODE = "preview_mode"
 
@@ -47,15 +44,11 @@ def render_hud(surf, fps):
   HUD_FONT.render_to(surf, (SCREEN_WIDTH - 10 - HUD_FONT.get_rect(text).width, 10), text, text_color)
 
 def parameters_changed(vein_renderer_invalid:bool=True):
-  global reference_image, reference_surf, screen, vein_renderer
+  global screen, vein_renderer
 
   if vein_renderer_invalid:
     vein_renderer = VeinRenderer(parameters)
   slider_panel.set_parameters(parameters)
-
-  reference_surf = pygame.Surface(screen.get_size())
-  reference_surf.blit(reference_image, REFERENCE_IMAGE_OFFSET)
-  reference_surf.set_alpha(parameters["reference_alpha"])
 
 def load_parameters():
   global parameters, slider_panel
@@ -126,7 +119,6 @@ left_wing_surf = pygame.Surface(half_screen_size)
 left_wing_surf = left_wing_surf.convert_alpha(screen)
 right_wing_surf = pygame.Surface(half_screen_size)
 right_wing_surf = right_wing_surf.convert_alpha(screen)
-reference_surf = pygame.Surface(screen.get_size())
 
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
@@ -140,8 +132,7 @@ slider_panel = SliderPanel(
   manager=uimanager)
 
 slider_param_names = [
-  "alpha",
-  "reference_alpha",
+  # "alpha",
 
   # "max_generations_const",
   # "max_generations_linear",
@@ -181,8 +172,6 @@ slider_param_names = [
 for name in slider_param_names:
   slider_panel.add_slider(param_defs[name])
 
-reference_image = pygame.image.load('assets/orthoptera_dark.png')
-reference_image = pygame.transform.scale_by(reference_image, 4)
 fps_array = []
 
 parameters_changed()
@@ -222,9 +211,6 @@ while running:
   uimanager.update(dt)
 
   screen.fill("black")
-
-  if mode == EDIT_MODE:
-    screen.blit(reference_surf)
 
   left_wing_surf.fill((0, 0, 0, 0))
   vein_renderer.render_to(left_wing_surf)

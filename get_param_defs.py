@@ -5,7 +5,6 @@ from param_def import ParamDef
 def get_param_defs() -> Dict[str, ParamDef]:
   return {d.name: d for d in [
     ParamDef("alpha", "int", (0, 255)),
-    ParamDef("reference_alpha", "int", (0, 255)),
     ParamDef("num_root_segments", "int", (12, 12)),
     ParamDef("root_segment_pos_const_x", "int", (0, 1920)),
     ParamDef("root_segment_pos_const_y", "int", (0, 1080)),
