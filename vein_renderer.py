@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import numpy as np
 import pygame
 from shapely.geometry import Point, Polygon
 
@@ -24,7 +25,8 @@ class VeinRenderer:
     self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
-    self._interveinal_regions = []
+    self._left_interveinal_regions = []
+    self._right_interveinal_regions = []
 
   def is_contained_by(self, bounds_rect:pygame.Rect):
     bounds:Polygon = Polygon([
@@ -47,7 +49,8 @@ class VeinRenderer:
     return self._detect_collision(self._root_segments) != False
 
   def generate_cross_veins(self):
-    self._interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
+    self._left_interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
+    self._right_interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
 
   def _get_segment_direction(self, parameters:ParamSet, index:int, generation:int):
     return (
@@ -156,18 +159,25 @@ class VeinRenderer:
       prev_segment = segment
     return result
 
-  def _render_segment_and_descendants(self, surf, index, seg):
+  def _render_segment_and_descendants(self, surf, offset, h_flip, index, seg):
     color = pygame.Color(255, 255, 255, self._alpha)
-    pygame.draw.line(surf, color, seg.position, self._get_endpoint(seg), 3)
-    for child_segment in seg.children:
-      self._render_segment_and_descendants(surf, index, child_segment)
+    point = np.add(offset, np.multiply([h_flip, 1], seg.position))
+    endpoint = np.add(offset, np.multiply([h_flip, 1], self._get_endpoint(seg)))
+    pygame.draw.line(surf, color, point, endpoint, 3)
 
-  def render_to(self, surf):
-    for interveinal_region in self._interveinal_regions:
-      interveinal_region.render_to(surf)
+    for child_segment in seg.children:
+      self._render_segment_and_descendants(surf, offset, h_flip, index, child_segment)
+
+  def render_to(self, surf, offset):
+    for interveinal_region in self._left_interveinal_regions:
+      interveinal_region.render_to(surf, offset, -1)
+
+    for interveinal_region in self._right_interveinal_regions:
+      interveinal_region.render_to(surf, offset, 1)
 
     for index, root_segment in enumerate(self._root_segments):
-      self._render_segment_and_descendants(surf, index, root_segment)
+      self._render_segment_and_descendants(surf, offset, -1, index, root_segment)
+      self._render_segment_and_descendants(surf, offset, 1, index, root_segment)
 
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length

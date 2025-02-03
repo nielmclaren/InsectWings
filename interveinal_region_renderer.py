@@ -1,3 +1,4 @@
+import numpy as np
 import pygame
 import random
 from shapely.geometry import MultiPoint, Point
@@ -13,10 +14,11 @@ class InterveinalRegionRenderer:
     self._inhibitory_centers = self._lloyds_algorithm(inhibitory_centers, 50)
     self._voronoi_polygons = self._get_voronoi_polygons(self._inhibitory_centers, self._polygon)
 
-  def render_to(self, surf):
+  def render_to(self, surf, offset, h_flip):
     color = pygame.Color(255, 255, 255)
     for polygon in self._voronoi_polygons:
       points = tuple(polygon.exterior.coords)
+      points = [tuple(np.add(offset, np.multiply([h_flip, 1], point))) for point in points]
       prev_point = False
       for point in points:
         if prev_point:

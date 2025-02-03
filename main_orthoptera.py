@@ -108,12 +108,11 @@ def randomize_parameters():
       print("GEOSException")
   parameters_changed(False)
 
-def export_wing(left_surf, right_surf, index):
+def export_wing(surf, index):
   filename = f"output/wing_{str(index).zfill(3)}.png"
   result = pygame.Surface(screen.get_size())
   result.fill((0, 0, 0))
-  result.blit(left_surf)
-  result.blit(right_surf, (half_screen_size[0], 0))
+  result.blit(surf)
 
   pygame.image.save(result, f"{filename}")
   print(f"Saved wing {filename}")
@@ -124,11 +123,8 @@ def save_screenshot(surf, index):
   print(f"Saved screenshot {filename}")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-half_screen_size = (screen.get_size()[0]/2, screen.get_size()[1])
-left_wing_surf = pygame.Surface(half_screen_size)
-left_wing_surf = left_wing_surf.convert_alpha(screen)
-right_wing_surf = pygame.Surface(half_screen_size)
-right_wing_surf = right_wing_surf.convert_alpha(screen)
+wing_surf = pygame.Surface(screen.get_size())
+wing_surf = wing_surf.convert_alpha(screen)
 
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
@@ -207,7 +203,7 @@ while running:
       elif event.key == pygame.K_v:
         save_parameters()
       elif event.key == pygame.K_x:
-        export_wing(left_wing_surf, right_wing_surf, export_index)
+        export_wing(wing_surf, export_index)
         export_index += 1
       elif event.key == pygame.K_m:
         if mode == EDIT_MODE:
@@ -222,20 +218,14 @@ while running:
 
   screen.fill("black")
 
-  left_wing_surf.fill((0, 0, 0, 0))
-  vein_renderer.render_to(left_wing_surf)
-  left_wing_surf = pygame.transform.flip(left_wing_surf, True, False)
-  screen.blit(left_wing_surf)
-
-  right_wing_surf.fill((0, 0, 0, 0))
-  vein_renderer.render_to(right_wing_surf)
-  screen.blit(right_wing_surf, (half_screen_size[0], 0))
+  wing_surf.fill((0, 0, 0, 0))
+  vein_renderer.render_to(wing_surf, [screen.get_size()[0]/2, 0])
+  screen.blit(wing_surf)
 
   render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)
 
   if mode == EDIT_MODE:
     uimanager.draw_ui(screen)
-
 
   pygame.display.flip()
 
