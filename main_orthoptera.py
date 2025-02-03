@@ -72,6 +72,12 @@ def randomize_parameter(name:str):
 def randomize_parameters():
   global parameters
   param_names = [
+    "root_segment_dir_const_x",
+    "root_segment_dir_const_y",
+    "root_segment_dir_linear_x",
+    "root_segment_dir_linear_y",
+    "root_segment_dir_quadratic_x",
+    "root_segment_dir_quadratic_y",
     "segment_dir_linear_x",
     "segment_dir_linear_y",
     "segment_dir_quadratic_x",
@@ -142,15 +148,15 @@ slider_param_names = [
   # "max_generations_linear",
   # "max_generations_quadratic",
 
-  "root_segment_len",
-  "segment_len_factor",
+  # "root_segment_len",
+  # "segment_len_factor",
 
-  "root_segment_pos_const_x",
-  "root_segment_pos_const_y",
-  "root_segment_pos_linear_x",
-  "root_segment_pos_linear_y",
-  "root_segment_pos_quadratic_x",
-  "root_segment_pos_quadratic_y",
+  # "root_segment_pos_const_x",
+  # "root_segment_pos_const_y",
+  # "root_segment_pos_linear_x",
+  # "root_segment_pos_linear_y",
+  # "root_segment_pos_quadratic_x",
+  # "root_segment_pos_quadratic_y",
 
   "root_segment_dir_const_x",
   "root_segment_dir_const_y",
