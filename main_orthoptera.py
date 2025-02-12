@@ -26,7 +26,11 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 SLIDER_PANEL_WIDTH = 350
 
-TARGET_BOX = pygame.Rect((20, 20), (SCREEN_WIDTH - SLIDER_PANEL_WIDTH - 40, SCREEN_HEIGHT - 40))
+TARGET_BOX = pygame.Rect((SCREEN_WIDTH/2, 20), (SCREEN_WIDTH/2 - 20, SCREEN_HEIGHT - 40))
+BASE_TARGET_BOX = pygame.Rect(
+  (SCREEN_WIDTH/2, SCREEN_HEIGHT * 0.2),
+  (200, SCREEN_HEIGHT * 0.6))
+RENDER_OFFSET = (SCREEN_WIDTH/2, 0)
 
 EDIT_MODE = "edit_mode"
 PREVIEW_MODE = "preview_mode"
@@ -69,7 +73,35 @@ def randomize_parameter(name:str):
   param_def = param_defs[name]
   parameters[name] = random.uniform(param_def.range[0], param_def.range[1])
 
-def randomize_parameters():
+def randomize_base_parameters():
+  global parameters
+  param_names = [
+    "root_segment_pos_linear_x",
+    "root_segment_pos_linear_y",
+    "root_segment_pos_quadratic_x",
+    "root_segment_pos_quadratic_y",
+  ]
+  attempts_remaining = 1000
+  while True:
+    attempts_remaining -= 1
+    if attempts_remaining < 0:
+      print("Max attempts reached.")
+      break
+    for name in param_names:
+      randomize_parameter(name)
+    try:
+      vein_renderer = VeinRenderer(parameters)
+      if not vein_renderer.is_base_contained_by(BASE_TARGET_BOX, RENDER_OFFSET):
+        print("Rejected wing base out of bounds.")
+      else:
+        print("Approved!")
+        break
+
+    except GEOSException:
+      print("GEOSException")
+  parameters_changed(False)
+
+def randomize_primary_vein_parameters():
   global parameters
   param_names = [
     "root_segment_dir_const_x",
@@ -78,6 +110,7 @@ def randomize_parameters():
     "root_segment_dir_linear_y",
     "root_segment_dir_quadratic_x",
     "root_segment_dir_quadratic_y",
+
     "segment_dir_linear_x",
     "segment_dir_linear_y",
     "segment_dir_quadratic_x",
@@ -91,22 +124,27 @@ def randomize_parameters():
     "segment_dir_d_x",
     "segment_dir_d_y"
   ]
+  attempts_remaining = 1000
   while True:
+    attempts_remaining -= 1
+    if attempts_remaining < 0:
+      print("Max attempts reached.")
+      break
     for name in param_names:
       randomize_parameter(name)
     try:
       vein_renderer = VeinRenderer(parameters)
-      if not vein_renderer.is_contained_by(TARGET_BOX):
-        print("Rejected out of bounds.")
+      if not vein_renderer.is_contained_by(TARGET_BOX, RENDER_OFFSET):
+        print("Rejected wing out of bounds.")
       elif vein_renderer.has_collision():
         print("Rejected overlapping primary veins.")
       else:
         print("Approved!")
+        parameters_changed(False)
         break
 
     except GEOSException:
       print("GEOSException")
-  parameters_changed(False)
 
 def export_wing(surf, index):
   filename = f"output/wing_{str(index).zfill(3)}.png"
@@ -149,10 +187,10 @@ slider_param_names = [
 
   # "root_segment_pos_const_x",
   # "root_segment_pos_const_y",
-  # "root_segment_pos_linear_x",
-  # "root_segment_pos_linear_y",
-  # "root_segment_pos_quadratic_x",
-  # "root_segment_pos_quadratic_y",
+  "root_segment_pos_linear_x",
+  "root_segment_pos_linear_y",
+  "root_segment_pos_quadratic_x",
+  "root_segment_pos_quadratic_y",
 
   "root_segment_dir_const_x",
   "root_segment_dir_const_y",
@@ -189,14 +227,16 @@ while running:
     elif event.type == pygame.KEYDOWN:
       if event.key == pygame.K_ESCAPE:
         running = False
-      elif event.key == pygame.K_c:
-        vein_renderer.generate_cross_veins()
       elif event.key == pygame.K_l:
         load_parameters()
         parameters_changed()
-      elif event.key == pygame.K_q:
-        randomize_parameters()
+      elif event.key == pygame.K_1:
+        randomize_base_parameters()
+      elif event.key == pygame.K_2:
+        randomize_primary_vein_parameters()
         parameters_changed()
+      elif event.key == pygame.K_3:
+        vein_renderer.generate_cross_veins()
       elif event.key == pygame.K_r:
         save_screenshot(screen, screenshot_index)
         screenshot_index += 1
@@ -219,7 +259,7 @@ while running:
   screen.fill("black")
 
   wing_surf.fill((0, 0, 0, 0))
-  vein_renderer.render_to(wing_surf, [screen.get_size()[0]/2, 0])
+  vein_renderer.render_to(wing_surf, RENDER_OFFSET)
   screen.blit(wing_surf)
 
   render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)

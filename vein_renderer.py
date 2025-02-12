@@ -28,12 +28,25 @@ class VeinRenderer:
     self._left_interveinal_regions = []
     self._right_interveinal_regions = []
 
-  def is_contained_by(self, bounds_rect:pygame.Rect):
+  def is_base_contained_by(self, bounds_rect:pygame.Rect, offset):
     bounds:Polygon = Polygon([
-      bounds_rect.topleft,
-      bounds_rect.topright,
-      bounds_rect.bottomright,
-      bounds_rect.bottomleft])
+      np.subtract(bounds_rect.topleft, offset),
+      np.subtract(bounds_rect.topright, offset),
+      np.subtract(bounds_rect.bottomright, offset),
+      np.subtract(bounds_rect.bottomleft, offset)])
+
+    for root_segment in self._root_segments:
+      if not bounds.contains(Point(root_segment.position)):
+        return False
+
+    return True
+
+  def is_contained_by(self, bounds_rect:pygame.Rect, offset):
+    bounds:Polygon = Polygon([
+      np.subtract(bounds_rect.topleft, offset),
+      np.subtract(bounds_rect.topright, offset),
+      np.subtract(bounds_rect.bottomright, offset),
+      np.subtract(bounds_rect.bottomleft, offset)])
 
     for root_segment in self._root_segments:
       if not bounds.contains(Point(root_segment.position)):
