@@ -8,22 +8,25 @@ from param_set import ParamSet
 
 class InterveinalRegionRenderer:
   def __init__(self, polygon, parameters:ParamSet):
-    self._alpha = parameters['alpha']
+    self._parameters = parameters
     self._polygon = polygon
     inhibitory_centers = self._get_inhibitory_centers(self._polygon)
     self._inhibitory_centers = self._lloyds_algorithm(inhibitory_centers, 50)
-    self._voronoi_polygons = self._get_voronoi_polygons(self._inhibitory_centers, self._polygon)
+    # self._voronoi_polygons = self._get_voronoi_polygons(self._inhibitory_centers, self._polygon)
 
   def render_to(self, surf, offset, h_flip):
     color = pygame.Color(255, 255, 255)
-    for polygon in self._voronoi_polygons:
-      points = tuple(polygon.exterior.coords)
-      points = [tuple(np.add(offset, np.multiply([h_flip, 1], point))) for point in points]
-      prev_point = False
-      for point in points:
-        if prev_point:
-          pygame.draw.line(surf, color, prev_point, point)
-        prev_point = point
+    for point in self._inhibitory_centers.geoms:
+      point = (point.x, point.y)
+      pygame.draw.circle(surf, color, tuple(np.add(offset, np.multiply([h_flip, 1], point))), 3)
+    # for polygon in self._voronoi_polygons:
+    #   points = tuple(polygon.exterior.coords)
+    #   points = [tuple(np.add(offset, np.multiply([h_flip, 1], point))) for point in points]
+    #   prev_point = False
+    #   for point in points:
+    #     if prev_point:
+    #       pygame.draw.line(surf, color, prev_point, point)
+    #     prev_point = point
 
   def _get_inhibitory_centers(self, interveinal_region):
     area = interveinal_region.area
@@ -63,12 +66,14 @@ class InterveinalRegionRenderer:
     return intersection(polygons.geoms, extent)
 
   def _lloyds_algorithm(self, initial_inhibitory_centers:MultiPoint, iterations:int):
-    inhibitory_centers = initial_inhibitory_centers
-    for _ in range(iterations):
-      voronoi_polygons = self._get_voronoi_polygons(inhibitory_centers, self._polygon)
-      centroids = []
-      for polygon in voronoi_polygons:
-        centroids.append(polygon.centroid)
-      inhibitory_centers = MultiPoint(centroids)
-    return inhibitory_centers
+    return initial_inhibitory_centers
+
+    # inhibitory_centers = initial_inhibitory_centers
+    # for _ in range(iterations):
+    #   voronoi_polygons = self._get_voronoi_polygons(inhibitory_centers, self._polygon)
+    #   centroids = []
+    #   for polygon in voronoi_polygons:
+    #     centroids.append(polygon.centroid)
+    #   inhibitory_centers = MultiPoint(centroids)
+    # return inhibitory_centers
 

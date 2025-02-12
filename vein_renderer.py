@@ -22,7 +22,6 @@ class Segment:
 class VeinRenderer:
   def __init__(self, parameters:ParamSet):
     self._parameters = parameters
-    self._alpha = parameters['alpha']
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
     self._left_interveinal_regions = []
@@ -173,7 +172,7 @@ class VeinRenderer:
     return result
 
   def _render_segment_and_descendants(self, surf, offset, h_flip, index, seg):
-    color = pygame.Color(255, 255, 255, self._alpha)
+    color = pygame.Color(255, 255, 255, self._parameters["alpha"])
     point = np.add(offset, np.multiply([h_flip, 1], seg.position))
     endpoint = np.add(offset, np.multiply([h_flip, 1], self._get_endpoint(seg)))
     pygame.draw.line(surf, color, point, endpoint, 3)
