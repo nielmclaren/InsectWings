@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import numpy as np
 import pygame
 from shapely.geometry import Point, Polygon
@@ -6,18 +5,8 @@ from shapely.geometry import Point, Polygon
 from interveinal_region_renderer import InterveinalRegionRenderer
 from param_set import ParamSet
 from param_helpers import quadratic_param_to_vector2, param_to_vector2
+from segment import Segment
 from subdict import subdict
-
-@dataclass
-class Segment:
-  position:pygame.Vector2
-  direction:pygame.Vector2
-  length:float
-  age: int = 0
-  index: int = 0
-  generation: int = 0
-  children: list['Segment'] = field(default_factory=lambda: [])
-
 
 class VeinRenderer:
   def __init__(self, parameters:ParamSet):
@@ -167,7 +156,7 @@ class VeinRenderer:
     prev_segment = False
     for segment in root_segments:
       if prev_segment:
-        result.append(InterveinalRegionRenderer(self._get_polygon(prev_segment, segment), parameters))
+        result.append(InterveinalRegionRenderer(prev_segment, segment, parameters))
       prev_segment = segment
     return result
 
@@ -191,24 +180,6 @@ class VeinRenderer:
       self._render_segment_and_descendants(surf, offset, -1, index, root_segment)
       self._render_segment_and_descendants(surf, offset, 1, index, root_segment)
 
+  # TODO: De-duplicate with interveinal_region_renderer.py
   def _get_endpoint(self, segment:Segment):
     return segment.position + segment.direction * segment.length
-
-  def _get_segment_points(self, segment:Segment):
-    result = []
-    while True:
-      result.append((segment.position.x, segment.position.y))
-      if len(segment.children) > 0:
-        segment = segment.children[0]
-      else:
-        break
-    endpoint = self._get_endpoint(segment)
-    result.append((endpoint.x, endpoint.y))
-    return result
-
-  def _get_polygon(self, seg0, seg1):
-    # Get a list of points traveling down seg0 and up seg1.
-    points = []
-    points.extend(self._get_segment_points(seg0))
-    points.extend(reversed(self._get_segment_points(seg1)))
-    return Polygon(points)
