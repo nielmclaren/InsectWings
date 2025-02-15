@@ -178,9 +178,9 @@ slider_panel = SliderPanel(
 slider_param_names = [
   # "alpha",
 
-  # "max_generations_const",
-  # "max_generations_linear",
-  # "max_generations_quadratic",
+  "max_generations_const",
+  "max_generations_linear",
+  "max_generations_quadratic",
 
   # "root_segment_len",
   # "segment_len_factor",
