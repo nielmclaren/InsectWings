@@ -70,14 +70,17 @@ class InterveinalRegionRenderer:
     len0 = line_string0.length
     len1 = line_string1.length
 
-    num_points = floor(area * 0.000845)
+    num_points = floor(area * self._parameters["cross_vein_density"] * random.uniform(0.90, 1.10))
     multi_point = MultiPoint([])
 
     # Omit both endpoints to avoid colliding with the edges of the wing.
     for i in [(x + 1) / (num_points + 1) for x in range(0, num_points)]:
       p0 = line_string0.interpolate(i * len0)
       p1 = line_string1.interpolate(i * len1)
-      multi_point = MultiPoint(list(multi_point.geoms) + [Point((p0.x + p1.x)/2, (p0.y + p1.y)/2)])
+      midpoint = Point(
+        (p0.x + p1.x)/2 + random.uniform(-2, 2),
+        (p0.y + p1.y)/2 + random.uniform(-2, 2))
+      multi_point = MultiPoint(list(multi_point.geoms) + [midpoint])
     return multi_point
   
   def _segment_to_line_string(self, segment0:Segment):

@@ -33,6 +33,7 @@ class ParamSet(TypedDict):
   max_generations_const: int
   max_generations_linear: float
   max_generations_quadratic: float
+  cross_vein_density: float
 
   def defaults():
     return ParamSet(
@@ -67,5 +68,6 @@ class ParamSet(TypedDict):
       segment_len_factor=0.95,
       max_generations_const=12,
       max_generations_linear=0.0,
-      max_generations_quadratic=0.0
+      max_generations_quadratic=0.0,
+      cross_vein_density=0.000845
     )

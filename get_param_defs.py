@@ -34,5 +34,6 @@ def get_param_defs() -> Dict[str, ParamDef]:
     ParamDef("segment_len_factor", "float", (0.2, 1.2)),
     ParamDef("max_generations_const", "int", (0, 100)),
     ParamDef("max_generations_linear", "float", (-10, 10)),
-    ParamDef("max_generations_quadratic", "float", (-1, 1))
+    ParamDef("max_generations_quadratic", "float", (-1, 1)),
+    ParamDef("cross_vein_density", "float", (0.0005, 0.002))
   ]}

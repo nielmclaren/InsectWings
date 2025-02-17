@@ -30,5 +30,6 @@
   "segment_len_factor": 0.9748756218905679,
   "max_generations_const": 70,
   "max_generations_linear": -9.850746268656714,
-  "max_generations_quadratic": 0.4477611940298507
+  "max_generations_quadratic": 0.4477611940298507,
+  "cross_vein_density": 0.000845
 }

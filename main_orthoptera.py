@@ -178,6 +178,8 @@ slider_panel = SliderPanel(
 slider_param_names = [
   # "alpha",
 
+  "cross_vein_density",
+
   "max_generations_const",
   "max_generations_linear",
   "max_generations_quadratic",
