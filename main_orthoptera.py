@@ -178,6 +178,7 @@ slider_panel = SliderPanel(
 slider_param_names = [
   # "alpha",
 
+  "num_root_segments",
   "cross_vein_density",
 
   "max_generations_const",

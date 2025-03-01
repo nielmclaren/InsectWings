@@ -19,7 +19,7 @@
   "segment_dir_linear_y": -0.6410272005102902,
   "segment_dir_quadratic_x": 0.08427962634708555,
   "segment_dir_quadratic_y": 0.08052084022823608,
-  "segment_dir_a_x": 4.605048914150048e-6,
+  "segment_dir_a_x": 4.605048914150048e-06,
   "segment_dir_a_y": 0.0003503731264589364,
   "segment_dir_b_x": -0.008315057654144496,
   "segment_dir_b_y": 0.01862860721854552,
@@ -31,5 +31,5 @@
   "max_generations_const": 70,
   "max_generations_linear": -9.850746268656714,
   "max_generations_quadratic": 0.4477611940298507,
-  "cross_vein_density": 0.000845
+  "cross_vein_density": 0.001076343283582089
 }
