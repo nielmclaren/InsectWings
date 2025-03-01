@@ -101,6 +101,36 @@ def randomize_base_parameters():
       print("GEOSException")
   parameters_changed(False)
 
+def randomize_generation_parameters():
+  global parameters
+  param_names = [
+    "max_generations_const",
+    "max_generations_linear",
+    "max_generations_quadratic"
+  ]
+  attempts_remaining = 1000
+  while True:
+    attempts_remaining -= 1
+    if attempts_remaining < 0:
+      print("Max attempts reached.")
+      break
+    for name in param_names:
+      randomize_parameter(name)
+    try:
+      vein_renderer = VeinRenderer(parameters)
+      if not vein_renderer.is_contained_by(TARGET_BOX, RENDER_OFFSET):
+        print("Rejected wing out of bounds.")
+      elif vein_renderer.has_collision():
+        print("Rejected overlapping primary veins.")
+      else:
+        print("Approved!")
+        parameters_changed(False)
+        break
+
+    except GEOSException:
+      print("GEOSException")
+
+
 def randomize_primary_vein_parameters():
   global parameters
   param_names = [
@@ -236,9 +266,12 @@ while running:
       elif event.key == pygame.K_1:
         randomize_base_parameters()
       elif event.key == pygame.K_2:
-        randomize_primary_vein_parameters()
+        randomize_generation_parameters()
         parameters_changed()
       elif event.key == pygame.K_3:
+        randomize_primary_vein_parameters()
+        parameters_changed()
+      elif event.key == pygame.K_4:
         vein_renderer.generate_cross_veins()
       elif event.key == pygame.K_r:
         save_screenshot(screen, screenshot_index)
