@@ -14,6 +14,7 @@ from typing import Dict
 from get_param_defs import get_param_defs
 from param_def import ParamDef
 from param_set import ParamSet
+from param_set_defaults import param_set_defaults
 from vein_renderer import VeinRenderer
 from slider_panel import SliderPanel
 
@@ -39,7 +40,7 @@ export_index = 0
 screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
-parameters:ParamSet = ParamSet.defaults()
+parameters:ParamSet = param_set_defaults()
 vein_renderer:VeinRenderer
 
 mode = EDIT_MODE
@@ -71,7 +72,7 @@ def save_parameters():
 def randomize_parameter(name:str):
   global param_defs, parameters
   param_def = param_defs[name]
-  parameters[name] = random.uniform(param_def.range[0], param_def.range[1])
+  parameters[name] = random.uniform(param_def.range[0], param_def.range[1]) # type: ignore[literal-required]
 
 def randomize_base_parameters():
   global parameters
@@ -192,12 +193,12 @@ def save_screenshot(surf, index):
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 wing_surf = pygame.Surface(screen.get_size())
-wing_surf = wing_surf.convert_alpha(screen)
+wing_surf = wing_surf.convert_alpha()
 
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
 running = True
-dt = 0
+dt:float = 0.0
 
 uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
 slider_panel = SliderPanel(
@@ -249,7 +250,7 @@ slider_param_names = [
 for name in slider_param_names:
   slider_panel.add_slider(param_defs[name])
 
-fps_array = []
+fps_array:list[float] = []
 
 parameters_changed()
 
@@ -305,7 +306,7 @@ while running:
 
   pygame.display.flip()
 
-  dt = clock.tick(MAX_FPS) / 1000
+  dt = float(clock.tick(MAX_FPS)) / 1000.0
 
   fps_array.append(1 / dt)
   fps_array = fps_array[:10]

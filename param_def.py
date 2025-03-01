@@ -2,7 +2,7 @@ from math import floor
 from typing import Literal, Tuple
 
 class ParamDef():
-  def __init__(self, name, type, range):
+  def __init__(self, name: str, type: Literal['float', 'int'], range: Tuple['float', 'float']):
     self.name: str = name
     self.type: Literal['float', 'int'] = type
 

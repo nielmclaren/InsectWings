@@ -85,10 +85,10 @@ class InterveinalRegionRenderer:
   
   def _segment_to_line_string(self, segment0:Segment):
     points = []
-    segment = segment0
-    while segment:
+    segment : Segment | None = segment0
+    while segment != None:
       points.append(segment.position)
-      segment = segment.children and segment.children[0] or False
+      segment = segment.children and segment.children[0] or None
     return LineString(points)
 
   def _get_voronoi_polygons(self, inhibitory_centers, extent):
