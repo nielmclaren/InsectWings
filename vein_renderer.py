@@ -16,6 +16,12 @@ class VeinRenderer:
         self._left_interveinal_regions: list[InterveinalRegionRenderer] = []
         self._right_interveinal_regions: list[InterveinalRegionRenderer]= []
 
+    def primary_vein_length_constraint(self):
+        for root_segment in self._root_segments:
+            if len(root_segment.children) < 1:
+                return False
+        return True
+
     def is_base_contained_by(self, bounds_rect:pygame.Rect, offset):
         bounds:Polygon = Polygon([
             np.subtract(bounds_rect.topleft, offset),

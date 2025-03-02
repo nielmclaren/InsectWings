@@ -118,7 +118,9 @@ def randomize_generation_parameters():
             randomize_parameter(param_name)
         try:
             vein_renderer_check = VeinRenderer(parameters)
-            if not vein_renderer_check.is_contained_by(TARGET_BOX, RENDER_OFFSET):
+            if not vein_renderer_check.primary_vein_length_constraint():
+                print("Rejected short primary veins")
+            elif not vein_renderer_check.is_contained_by(TARGET_BOX, RENDER_OFFSET):
                 print("Rejected wing out of bounds.")
             elif vein_renderer_check.has_collision():
                 print("Rejected overlapping primary veins.")
