@@ -16,6 +16,7 @@ from param_def import ParamDef
 from param_set import ParamSet
 from param_set_defaults import default_param_set
 from vein_renderer import VeinRenderer
+from screen_capturer import ScreenCapturer
 from slider_panel import SliderPanel
 
 pygame.init()
@@ -36,8 +37,8 @@ RENDER_OFFSET = (SCREEN_WIDTH/2, 0)
 EDIT_MODE = "edit_mode"
 PREVIEW_MODE = "preview_mode"
 
-export_index = 0
-screenshot_index = 0
+screen_capturer = ScreenCapturer("output/orthoptera_", ".png")
+export_capturer = ScreenCapturer("output/wing_", ".png")
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
 parameters:ParamSet = default_param_set()
@@ -173,18 +174,16 @@ def randomize_primary_vein_parameters():
         except GEOSException:
             print("GEOSException")
 
-def export_wing(surf, index):
-    filename = f"output/wing_{str(index).zfill(3)}.png"
+def export_wing(surf):
     result = pygame.Surface(screen.get_size())
     result.fill((0, 0, 0))
     result.blit(surf)
 
-    pygame.image.save(result, f"{filename}")
-    print(f"Saved wing {filename}")
+    filename = export_capturer.capture(result)
+    print(f"Exported image {filename}")
 
-def save_screenshot(surf, index):
-    filename = f"output/orthoptera_{str(index).zfill(3)}.png"
-    pygame.image.save(surf, f"{filename}")
+def save_screenshot(surf):
+    filename = screen_capturer.capture(surf)
     print(f"Saved screenshot {filename}")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -273,13 +272,11 @@ while running:
             elif event.key == pygame.K_4:
                 vein_renderer.generate_cross_veins()
             elif event.key == pygame.K_r:
-                save_screenshot(screen, screenshot_index)
-                screenshot_index += 1
+                save_screenshot(screen)
             elif event.key == pygame.K_v:
                 save_parameters()
             elif event.key == pygame.K_x:
-                export_wing(wing_surf, export_index)
-                export_index += 1
+                export_wing(wing_surf)
             elif event.key == pygame.K_m:
                 if mode == EDIT_MODE:
                     mode = PREVIEW_MODE
