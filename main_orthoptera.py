@@ -59,13 +59,13 @@ def parameters_changed(vein_renderer_invalid:bool=True):
 
 def load_parameters():
     global parameters
-    with open('parameters.json', 'r') as f:
+    with open('parameters.json', 'r', encoding='utf-8') as f:
         parameters = json.load(f)
         parameters_changed()
     print("Loaded parameters.json")
 
 def save_parameters():
-    with open('parameters.json', 'w') as f:
+    with open('parameters.json', 'w', encoding='utf-8') as f:
         json.dump(parameters, f, indent=2)
     print("Saved parameters.json")
 
