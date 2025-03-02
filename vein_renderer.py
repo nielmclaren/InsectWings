@@ -13,8 +13,8 @@ class VeinRenderer:
     self._parameters = parameters
     self._root_segments = self._generate_segments(parameters)
     self._tip_segments = self._get_tip_segments(self._root_segments)
-    self._left_interveinal_regions = []
-    self._right_interveinal_regions = []
+    self._left_interveinal_regions: list[InterveinalRegionRenderer] = []
+    self._right_interveinal_regions: list[InterveinalRegionRenderer]= []
 
   def is_base_contained_by(self, bounds_rect:pygame.Rect, offset):
     bounds:Polygon = Polygon([
@@ -151,11 +151,11 @@ class VeinRenderer:
       return self._detect_collision(next_frontier, accumulator)
     return False
 
-  def _get_interveinal_regions(self, root_segments, parameters:ParamSet):
+  def _get_interveinal_regions(self, root_segments: list[Segment], parameters:ParamSet) -> list[InterveinalRegionRenderer]:
     result = []
-    prev_segment = False
+    prev_segment:Segment | None = None
     for segment in root_segments:
-      if prev_segment:
+      if prev_segment != None:
         result.append(InterveinalRegionRenderer(prev_segment, segment, parameters))
       prev_segment = segment
     return result
