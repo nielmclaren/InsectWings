@@ -264,10 +264,10 @@ while running:
             elif event.key == pygame.K_1:
                 randomize_base_parameters()
             elif event.key == pygame.K_2:
-                randomize_generation_parameters()
+                randomize_primary_vein_parameters()
                 parameters_changed()
             elif event.key == pygame.K_3:
-                randomize_primary_vein_parameters()
+                randomize_generation_parameters()
                 parameters_changed()
             elif event.key == pygame.K_4:
                 vein_renderer.generate_cross_veins()
