@@ -47,7 +47,7 @@ class VeinRenderer:
     return True
 
   def has_collision(self):
-    return self._detect_collision(self._root_segments) != False
+    return bool(self._detect_collision(self._root_segments))
 
   def generate_cross_veins(self):
     self._left_interveinal_regions = self._get_interveinal_regions(self._root_segments, self._parameters)
@@ -115,7 +115,6 @@ class VeinRenderer:
     s2:pygame.Vector2 = seg1.direction * seg1.length
 
     denominator:float = -s2.x * s1.y + s1.x * s2.y
-    # TODO: Handle the case where the denominator is zero.
     if denominator == 0:
       return False
 
@@ -155,7 +154,7 @@ class VeinRenderer:
     result = []
     prev_segment:Segment | None = None
     for segment in root_segments:
-      if prev_segment != None:
+      if prev_segment is not None:
         result.append(InterveinalRegionRenderer(prev_segment, segment, parameters))
       prev_segment = segment
     return result

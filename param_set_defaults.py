@@ -1,6 +1,6 @@
 from param_set import ParamSet
 
-def param_set_defaults():
+def default_param_set():
   return ParamSet(
     alpha=255,
     num_root_segments=12,

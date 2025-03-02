@@ -1,7 +1,9 @@
 from math import floor
+import random
+
 import numpy as np
 import pygame
-import random
+from shapely.errors import GEOSException
 from shapely.geometry import LineString, MultiPoint, Point, Polygon
 from shapely import intersection, normalize, voronoi_polygons
 
@@ -86,7 +88,7 @@ class InterveinalRegionRenderer:
   def _segment_to_line_string(self, segment0:Segment):
     points = []
     segment : Segment | None = segment0
-    while segment != None:
+    while segment is not None:
       points.append(segment.position)
       segment = segment.children and segment.children[0] or None
     return LineString(points)
@@ -95,15 +97,15 @@ class InterveinalRegionRenderer:
     try:
       polygons = normalize(voronoi_polygons(inhibitory_centers, extend_to=extent))
       return intersection(polygons.geoms, extent)
-    except:
+    except GEOSException:
       return []
 
   def _lloyds_algorithm(self, initial_inhibitory_centers:MultiPoint, iterations:int):
     inhibitory_centers = initial_inhibitory_centers
     for _ in range(iterations):
-      voronoi_polygons = self._get_voronoi_polygons(inhibitory_centers, self._polygon)
+      temp_voronoi_polygons = self._get_voronoi_polygons(inhibitory_centers, self._polygon)
       centroids = []
-      for polygon in voronoi_polygons:
+      for polygon in temp_voronoi_polygons:
         centroids.append(polygon.centroid)
       inhibitory_centers = MultiPoint(centroids)
     return inhibitory_centers

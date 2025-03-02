@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Union, Dict, Optional
+
 import pygame
 import pygame_gui
 from pygame_gui.core.object_id import ObjectID
@@ -8,7 +10,6 @@ from pygame_gui.core import UIElement
 from pygame_gui.core.gui_type_hints import RectLike
 from pygame_gui.elements.ui_horizontal_slider import UIHorizontalSlider
 from pygame_gui.elements.ui_text_box import UITextBox
-from typing import Union, Dict, Optional
 
 from param_def import ParamDef
 from param_set import ParamSet
@@ -29,7 +30,7 @@ class Entry:
 
 class SliderPanel(pygame_gui.elements.UIPanel):
   def __init__(
-      self, 
+      self,
       parameters: ParamSet,
       relative_rect: RectLike,
       manager: Optional[IUIManagerInterface] = None,
@@ -74,7 +75,9 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     label_textbox = UITextBox(
       param_def.name,
       container=self,
-      relative_rect=pygame.Rect((MARGIN, self._curr_y), (self.relative_rect.width - MARGIN * 2 - 1, LABEL_HEIGHT)),
+      relative_rect=pygame.Rect(
+        (MARGIN, self._curr_y),
+        (self.relative_rect.width - MARGIN * 2 - 1, LABEL_HEIGHT)),
       #anchors={'left': 'left', 'right': 'right'},
       manager=self.ui_manager,
       plain_text_display_only=True,
@@ -82,13 +85,16 @@ class SliderPanel(pygame_gui.elements.UIPanel):
     )
     slider = pygame_gui.elements.ui_horizontal_slider.UIHorizontalSlider(
       container=self,
-      relative_rect=pygame.Rect((MARGIN, self._curr_y + LABEL_HEIGHT - ADJUSTMENT), (self.relative_rect.width - MARGIN * 2 - VALUE_WIDTH + ADJUSTMENT, SLIDER_HEIGHT)),
+      relative_rect=pygame.Rect(
+        (MARGIN, self._curr_y + LABEL_HEIGHT - ADJUSTMENT),
+        (self.relative_rect.width - MARGIN * 2 - VALUE_WIDTH + ADJUSTMENT, SLIDER_HEIGHT)),
       start_value=value, value_range=param_def.range, click_increment=param_def.step,
       manager=self.ui_manager)
+    textbox_topleft = (self.relative_rect.width - MARGIN - VALUE_WIDTH - 1, self._curr_y + LABEL_HEIGHT - ADJUSTMENT)
     value_textbox = pygame_gui.elements.ui_text_box.UITextBox(
       self._format_value(value, param_def.type),
       container=self,
-      relative_rect=pygame.Rect((self.relative_rect.width - MARGIN - VALUE_WIDTH - 1, self._curr_y + LABEL_HEIGHT - ADJUSTMENT), (VALUE_WIDTH, SLIDER_HEIGHT)),
+      relative_rect=pygame.Rect(textbox_topleft, (VALUE_WIDTH, SLIDER_HEIGHT)),
       manager=self.ui_manager,
       plain_text_display_only=True,
       object_id='@value',

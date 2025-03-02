@@ -2,19 +2,19 @@
 
 import json
 from math import floor
+import random
+from typing import Dict
+
 import numpy as np
-import pygame_gui.elements.ui_panel
 import pygame
 import pygame.freetype
 import pygame_gui
-import random
 from shapely.errors import GEOSException
-from typing import Dict
 
 from get_param_defs import get_param_defs
 from param_def import ParamDef
 from param_set import ParamSet
-from param_set_defaults import param_set_defaults
+from param_set_defaults import default_param_set
 from vein_renderer import VeinRenderer
 from slider_panel import SliderPanel
 
@@ -40,7 +40,7 @@ export_index = 0
 screenshot_index = 0
 
 param_defs:Dict[str, ParamDef] = get_param_defs()
-parameters:ParamSet = param_set_defaults()
+parameters:ParamSet = default_param_set()
 vein_renderer:VeinRenderer
 
 mode = EDIT_MODE
@@ -75,7 +75,6 @@ def randomize_parameter(name:str):
   parameters[name] = random.uniform(param_def.range[0], param_def.range[1]) # type: ignore[literal-required]
 
 def randomize_base_parameters():
-  global parameters
   param_names = [
     "root_segment_pos_linear_x",
     "root_segment_pos_linear_y",
@@ -88,11 +87,11 @@ def randomize_base_parameters():
     if attempts_remaining < 0:
       print("Max attempts reached.")
       break
-    for name in param_names:
-      randomize_parameter(name)
+    for param_name in param_names:
+      randomize_parameter(param_name)
     try:
-      vein_renderer = VeinRenderer(parameters)
-      if not vein_renderer.is_base_contained_by(BASE_TARGET_BOX, RENDER_OFFSET):
+      vein_renderer_check = VeinRenderer(parameters)
+      if not vein_renderer_check.is_base_contained_by(BASE_TARGET_BOX, RENDER_OFFSET):
         print("Rejected wing base out of bounds.")
       else:
         print("Approved!")
@@ -103,7 +102,6 @@ def randomize_base_parameters():
   parameters_changed(False)
 
 def randomize_generation_parameters():
-  global parameters
   param_names = [
     "max_generations_const",
     "max_generations_linear",
@@ -115,11 +113,11 @@ def randomize_generation_parameters():
     if attempts_remaining < 0:
       print("Max attempts reached.")
       break
-    for name in param_names:
-      randomize_parameter(name)
+    for param_name in param_names:
+      randomize_parameter(param_name)
     try:
-      vein_renderer = VeinRenderer(parameters)
-      if not vein_renderer.is_contained_by(TARGET_BOX, RENDER_OFFSET):
+      vein_renderer_check = VeinRenderer(parameters)
+      if not vein_renderer_check.is_contained_by(TARGET_BOX, RENDER_OFFSET):
         print("Rejected wing out of bounds.")
       elif vein_renderer.has_collision():
         print("Rejected overlapping primary veins.")
@@ -131,9 +129,7 @@ def randomize_generation_parameters():
     except GEOSException:
       print("GEOSException")
 
-
 def randomize_primary_vein_parameters():
-  global parameters
   param_names = [
     "root_segment_dir_const_x",
     "root_segment_dir_const_y",
@@ -161,11 +157,11 @@ def randomize_primary_vein_parameters():
     if attempts_remaining < 0:
       print("Max attempts reached.")
       break
-    for name in param_names:
-      randomize_parameter(name)
+    for param_name in param_names:
+      randomize_parameter(param_name)
     try:
-      vein_renderer = VeinRenderer(parameters)
-      if not vein_renderer.is_contained_by(TARGET_BOX, RENDER_OFFSET):
+      vein_renderer_check = VeinRenderer(parameters)
+      if not vein_renderer_check.is_contained_by(TARGET_BOX, RENDER_OFFSET):
         print("Rejected wing out of bounds.")
       elif vein_renderer.has_collision():
         print("Rejected overlapping primary veins.")
@@ -197,14 +193,16 @@ wing_surf = wing_surf.convert_alpha()
 
 pygame.display.set_caption("Orthoptera")
 clock = pygame.time.Clock()
-running = True
+running:bool = True
 dt:float = 0.0
 
 uimanager = pygame_gui.UIManager((SCREEN_WIDTH, SCREEN_HEIGHT), theme_path="theme.json")
 slider_panel = SliderPanel(
   parameters=parameters,
-  relative_rect=pygame.Rect((SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25), (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
-  manager=uimanager)
+  relative_rect=pygame.Rect(
+    (SCREEN_WIDTH - 10 - SLIDER_PANEL_WIDTH, 25),
+    (SLIDER_PANEL_WIDTH, SCREEN_HEIGHT - 50)),
+    manager=uimanager)
 
 slider_param_names = [
   # "alpha",
@@ -299,7 +297,7 @@ while running:
   vein_renderer.render_to(wing_surf, RENDER_OFFSET)
   screen.blit(wing_surf)
 
-  render_hud(screen, floor(np.average(fps_array)) if len(fps_array) else 0)
+  render_hud(screen, floor(np.average(fps_array)) if fps_array else 0)
 
   if mode == EDIT_MODE:
     uimanager.draw_ui(screen)
